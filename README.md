@@ -23,10 +23,14 @@ curl -X DELETE http://localhost:8080/api/v2/examples/6
 
 In case everything is alright
 
-- message = OK, HTTP status = 200
+``` txt
+message = OK, HTTP status = 200
+```
 
 In case of an issue:
 
+``` txt
 message = dbError, HTTP status = 400 (database query syntax error)
 message = apiIssue, HTTP status = 400 (misc error like parsing issue, transaction start up issue, basically issues we didnt predicted)
 message = notFound, HTTP status = 404 (query is searching for something that cannot be found in the DB)
+```
