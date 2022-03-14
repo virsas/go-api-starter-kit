@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	_ "github.com/lib/pq"
-	"github.com/virsas/vssdb"
+	vssdb "github.com/virsas/go-mod-db"
 )
 
 func InitSQL() (*sql.DB, error) {

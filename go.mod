@@ -10,6 +10,6 @@ require (
 	github.com/lib/pq v1.10.4
 	github.com/prometheus/client_golang v1.12.1
 	github.com/thinkerou/favicon v0.1.0
-	github.com/virsas/vssdb v0.1.1
+	github.com/virsas/go-mod-db v0.1.2
 	go.uber.org/zap v1.21.0
 )
