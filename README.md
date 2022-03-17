@@ -1,36 +1,98 @@
 # go-api-starter-kit
 
-## Curl actions
+## Basic charasteristics
+
+JWT authorization
+MySQL or Postgresql database
+Cloudwatch or DynamoDB cloudtrail
+Gin router with zap logs and cors security
+Accessed allowed based on user roles
+Things the API can do is object based
+
+## Database
+
+The starter kit is configured with mysql DB, but migration to postgres should not be a problem. Just modify the utils/sql.go and env files
+
+replace this
+
+``` go
+# utils/sql.go
+db, err = vssdb.InitMysqlDB(dbAccountUser, dbAccountPass, dbAccountHost, dbAccountPort, dbAccountName)
+# .env
+VSS_DB_MYSQL_MAX_OPEN_CONNECTIONS=50
+VSS_DB_MYSQL_MAX_IDLE_CONNECTIONS=50
+```
+
+with
+
+``` go
+# utils/sql.go
+db, err = vssdb.InitPostgresDB(dbAccountUser, dbAccountPass, dbAccountHost, dbAccountPort, dbAccountName)
+# .env
+VSS_DB_PSQL_MAX_OPEN_CONNECTIONS=50
+VSS_DB_PSQL_MAX_IDLE_CONNECTIONS=50
+```
+
+## Audit trail
+
+At this moment the starter kit works with Cloudwatch log groups, in the future I will add DynamoDB too.
+
+## Claims
+
+Configuration in middlewares. At this moment i am getting just User ID from the JWT, you might need to modify that to add extra fileds. See moddlewares/auth.go
+
+``` go
+func getClaims(c *gin.Context, token *jwt.Token, log *zap.Logger) error {
+    // ...
+    if ok {
+        c.Set("foo1", claims["bar1"])
+        c.Set("foo2", claims["bar2"])
+        c.Set("foo3", claims["bar3"])
+        c.Set("foo4", claims["bar4"])
+    }
+    // ...
+}
+```
+
+## Errors
+
+see config/errors for more details. At this moment, those errors are returned in message string.
+
+- OK_STRING = "OK"
+- DB_STRING = "dbError"
+- SERVER_STRING = "apiError"
+- NOTFOUND_STRING = "notFound"
+- REQUEST_STRING = "requestError"
+- VALID_STRING = "validationError"
+- AUTH_STRING = "notAllowed"
+
+## Objects
+
+I provided an object called example with CRUD actions to create, update, delete, show and list the objects. This example can be copied and renamed to anything. Users, Accounts. See examples' object for more details.
+
+Each object has own routes, validation and methods and then connected to the API.
+
+## Testing with CURL
 
 ``` bash
+# Start the application
+touch .env
+cp emv.example .env
+# Configure your env file
+go run main.go
+
 # list
-curl -X GET http://localhost:8080/api/v2/examples
+curl -X GET http://localhost:8080/api/v1/examples
 
 # create
-curl -X POST http://localhost:8080/api/v2/examples -H 'Content-Type: application/json' -d '{"name":"test"}'
+curl -X POST http://localhost:8080/api/v1/examples -H 'Content-Type: application/json' -d '{"name":"test"}'
 
 # show
-curl -X GET http://localhost:8080/api/v2/examples/4
+curl -X GET http://localhost:8080/api/v1/examples/4
 
 # update
-curl -X PUT http://localhost:8080/api/v2/examples/4 -H 'Content-Type: application/json' -d '{"name":"test3"}'
+curl -X PUT http://localhost:8080/api/v1/examples/4 -H 'Content-Type: application/json' -d '{"name":"test3"}'
 
 # delete
-curl -X DELETE http://localhost:8080/api/v2/examples/6
-```
-
-## Rerurns and statuses
-
-In case everything is alright
-
-``` txt
-message = OK, HTTP status = 200
-```
-
-In case of an issue:
-
-``` txt
-message = dbError, HTTP status = 400 (database query syntax error)
-message = apiIssue, HTTP status = 400 (misc error like parsing issue, transaction start up issue, basically issues we didnt predicted)
-message = notFound, HTTP status = 404 (query is searching for something that cannot be found in the DB)
+curl -X DELETE http://localhost:8080/api/v1/examples/6
 ```
