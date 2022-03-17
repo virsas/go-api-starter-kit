@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"go-api-starter-kit/router"
+	"go-api-starter-kit/routes"
 	"go-api-starter-kit/utils"
 	"log"
 	"net/http"
@@ -33,12 +33,17 @@ func main() {
 		logger.Panic("Cannot init sql connection..", zap.Error(err))
 	}
 
+	audit, err := utils.InitAudit()
+	if err != nil {
+		logger.Panic("Cannot init audit trail..", zap.Error(err))
+	}
+
 	r, err := utils.InitRouter()
 	if err != nil {
 		logger.Panic("Cannot init gin router..", zap.Error(err))
 	}
 
-	router.AddRoutes(r, db, logger, ctx)
+	routes.AddRoutes(r, db, logger, ctx, audit)
 
 	apiPort, prometheusPort := utils.InitPorts()
 	go func() { log.Fatal(http.ListenAndServe(":"+prometheusPort, promhttp.Handler())) }()

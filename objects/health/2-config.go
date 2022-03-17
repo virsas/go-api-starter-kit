@@ -1,14 +1,13 @@
-package router
+package health
 
 import (
-	"context"
 	"database/sql"
 
 	"go.uber.org/zap"
 )
 
-type Env struct {
+// environment configuration
+type env struct {
 	db  *sql.DB
 	log *zap.Logger
-	ctx context.Context
 }

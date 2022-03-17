@@ -36,7 +36,7 @@ func InitRouter() (*gin.Engine, error) {
 
 	cors := cors.New(cors.Config{
 		AllowOrigins:     []string{"https://*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Authorization", "APIKey", "Content-Type", "X-CSRF-Token", "Origin"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: false,
