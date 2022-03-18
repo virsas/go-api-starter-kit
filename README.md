@@ -2,12 +2,12 @@
 
 ## Basic charasteristics
 
-JWT authorization
-MySQL or Postgresql database
-Cloudwatch or DynamoDB cloudtrail
-Gin router with zap logs and cors security
-Accessed allowed based on user roles
-Things the API can do is object based
+- JWT authorization
+- MySQL or Postgresql database
+- Cloudwatch or DynamoDB cloudtrail
+- Gin router with zap logs and cors security
+- Accessed allowed based on user roles
+- Things the API can do is object based
 
 ## Database
 
