@@ -10,33 +10,33 @@ import (
 )
 
 func Routes(r *gin.Engine, apiPath string, db *sql.DB, log *zap.Logger, ctx context.Context) {
-	exampleenv := &env{db: db, log: log, ctx: ctx}
+	ctrl := &controller{db: db, log: log, ctx: ctx}
 
 	r.GET(
 		"/examples/",
 		middlewares.AllowRoles(log, []string{"admin"}),
-		exampleenv.list,
+		ctrl.list,
 	)
 	r.POST(
 		"/examples/",
 		middlewares.AllowRoles(log, []string{"admin"}),
-		validateExample(exampleenv.log),
-		exampleenv.create,
+		validateExample(log),
+		ctrl.create,
 	)
 	r.GET(
 		"/examples/:ID",
 		middlewares.AllowRoles(log, []string{"admin"}),
-		exampleenv.show,
+		ctrl.show,
 	)
 	r.PATCH(
 		"/examples/:ID",
 		middlewares.AllowRoles(log, []string{"admin"}),
-		validateExample(exampleenv.log),
-		exampleenv.update,
+		validateExample(log),
+		ctrl.update,
 	)
 	r.DELETE(
 		"/examples/:ID",
 		middlewares.AllowRoles(log, []string{"admin"}),
-		exampleenv.delete,
+		ctrl.delete,
 	)
 }
