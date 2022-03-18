@@ -1,7 +1,6 @@
 package example
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"go-api-starter-kit/config"
@@ -14,12 +13,16 @@ import (
 type controller struct {
 	db  *sql.DB
 	log *zap.Logger
-	ctx context.Context
+	s   *service
+}
+
+func newController(db *sql.DB, log *zap.Logger) *controller {
+	s := newService(db, log)
+	return &controller{db: db, log: log, s: s}
 }
 
 func (ctrl *controller) list(c *gin.Context) {
-	s := &service{db: ctrl.db, log: ctrl.log, ctx: ctrl.ctx}
-	examples, err := s.list()
+	examples, err := ctrl.s.list()
 	if err != nil {
 		c.JSON(err.(*config.CustErr).Code(), gin.H{
 			"message": err.(*config.CustErr).Error(),
@@ -40,8 +43,7 @@ func (ctrl *controller) create(c *gin.Context) {
 		return
 	}
 
-	s := &service{db: ctrl.db, log: ctrl.log, ctx: ctrl.ctx}
-	err = s.create(example)
+	err = ctrl.s.create(c, example)
 	if err != nil {
 		c.JSON(err.(*config.CustErr).Code(), gin.H{
 			"message": err.(*config.CustErr).Error(),
@@ -63,8 +65,7 @@ func (ctrl *controller) show(c *gin.Context) {
 		return
 	}
 
-	s := &service{db: ctrl.db, log: ctrl.log, ctx: ctrl.ctx}
-	example, err := s.show(id)
+	example, err := ctrl.s.show(id)
 	if err != nil {
 		c.JSON(err.(*config.CustErr).Code(), gin.H{
 			"message": err.(*config.CustErr).Error(),
@@ -94,8 +95,7 @@ func (ctrl *controller) update(c *gin.Context) {
 		return
 	}
 
-	s := &service{db: ctrl.db, log: ctrl.log, ctx: ctrl.ctx}
-	err = s.update(id, example)
+	err = ctrl.s.update(c, id, example)
 	if err != nil {
 		c.JSON(err.(*config.CustErr).Code(), gin.H{
 			"message": err.(*config.CustErr).Error(),
@@ -117,8 +117,7 @@ func (ctrl *controller) delete(c *gin.Context) {
 		return
 	}
 
-	s := &service{db: ctrl.db, log: ctrl.log, ctx: ctrl.ctx}
-	err = s.delete(id)
+	err = ctrl.s.delete(c, id)
 	if err != nil {
 		c.JSON(err.(*config.CustErr).Code(), gin.H{
 			"message": err.(*config.CustErr).Error(),

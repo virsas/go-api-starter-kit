@@ -8,7 +8,7 @@ import (
 )
 
 func Routes(r *gin.Engine, apiPath string, db *sql.DB, log *zap.Logger) {
-	ctrl := &controller{db: db, log: log}
+	ctrl := newController(db, log)
 
 	r.GET(
 		apiPath+"/health",

@@ -11,6 +11,10 @@ type model struct {
 	log *zap.Logger
 }
 
+func newModel(db *sql.DB, log *zap.Logger) *model {
+	return &model{db: db, log: log}
+}
+
 func (m *model) show() string {
 	err := m.db.Ping()
 	if err != nil {

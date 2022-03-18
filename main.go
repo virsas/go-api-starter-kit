@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"go-api-starter-kit/routes"
 	"go-api-starter-kit/utils"
 	"log"
@@ -20,8 +19,6 @@ func init() {
 
 func main() {
 	var err error
-
-	ctx := context.Background()
 
 	logger, err := utils.InitLogger()
 	if err != nil {
@@ -43,7 +40,7 @@ func main() {
 		logger.Panic("Cannot init gin router..", zap.Error(err))
 	}
 
-	routes.AddRoutes(r, db, logger, ctx, audit)
+	routes.AddRoutes(r, db, logger, audit)
 
 	apiPort, prometheusPort := utils.InitPorts()
 	go func() { log.Fatal(http.ListenAndServe(":"+prometheusPort, promhttp.Handler())) }()

@@ -10,22 +10,25 @@ import (
 type service struct {
 	db  *sql.DB
 	log *zap.Logger
-	ctx context.Context
+	m   *model
+}
+
+func newService(db *sql.DB, log *zap.Logger) *service {
+	m := newModel(db, log)
+	return &service{db: db, log: log, m: m}
 }
 
 func (s *service) list() ([]examplemodel, error) {
 	var examples []examplemodel = []examplemodel{}
-	m := &model{db: s.db, log: s.log, ctx: s.ctx}
-	examples, err := m.list()
+	examples, err := s.m.list()
 	if err != nil {
 		return examples, err
 	}
 	return examples, nil
 }
 
-func (s *service) create(example examplereq) error {
-	m := &model{db: s.db, log: s.log, ctx: s.ctx}
-	err := m.create(example)
+func (s *service) create(c context.Context, example examplereq) error {
+	err := s.m.create(c, example)
 	if err != nil {
 		return err
 	}
@@ -35,8 +38,7 @@ func (s *service) create(example examplereq) error {
 
 func (s *service) show(id int64) (examplemodel, error) {
 	var example examplemodel
-	m := &model{db: s.db, log: s.log, ctx: s.ctx}
-	example, err := m.show(id)
+	example, err := s.m.show(id)
 	if err != nil {
 		return example, err
 	}
@@ -44,9 +46,8 @@ func (s *service) show(id int64) (examplemodel, error) {
 	return example, nil
 }
 
-func (s *service) update(id int64, example examplereq) error {
-	m := &model{db: s.db, log: s.log, ctx: s.ctx}
-	err := m.update(id, example)
+func (s *service) update(c context.Context, id int64, example examplereq) error {
+	err := s.m.update(c, id, example)
 	if err != nil {
 		return err
 	}
@@ -54,9 +55,8 @@ func (s *service) update(id int64, example examplereq) error {
 	return nil
 }
 
-func (s *service) delete(id int64) error {
-	m := &model{db: s.db, log: s.log, ctx: s.ctx}
-	err := m.delete(id)
+func (s *service) delete(c context.Context, id int64) error {
+	err := s.m.delete(c, id)
 	if err != nil {
 		return err
 	}

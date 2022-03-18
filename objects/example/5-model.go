@@ -12,7 +12,10 @@ import (
 type model struct {
 	db  *sql.DB
 	log *zap.Logger
-	ctx context.Context
+}
+
+func newModel(db *sql.DB, log *zap.Logger) *model {
+	return &model{db: db, log: log}
 }
 
 // examplereq struct
@@ -57,20 +60,20 @@ func (m *model) list() ([]examplemodel, error) {
 	return examples, nil
 }
 
-func (m *model) create(model examplereq) error {
-	tx, err := m.db.BeginTx(m.ctx, nil)
+func (m *model) create(c context.Context, model examplereq) error {
+	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error("apiIssue", zap.Error(err))
 		return config.NewServerError(err)
 	}
 
-	exampleInsertQuery, err := m.db.PrepareContext(m.ctx, "INSERT INTO examples (name, updated_at, created_at) VALUES (?,?,?);")
+	exampleInsertQuery, err := m.db.PrepareContext(c, "INSERT INTO examples (name, updated_at, created_at) VALUES (?,?,?);")
 	if err != nil {
 		m.log.Error("dbError", zap.Error(err))
 		return config.NewDBError(err)
 	}
 
-	_, err = exampleInsertQuery.ExecContext(m.ctx, model.Name, time.Now(), time.Now())
+	_, err = exampleInsertQuery.ExecContext(c, model.Name, time.Now(), time.Now())
 	if err != nil {
 		tx.Rollback()
 		m.log.Error("dbError", zap.Error(err))
@@ -108,21 +111,21 @@ func (m *model) show(id int64) (examplemodel, error) {
 	return example, nil
 }
 
-func (m *model) update(id int64, model examplereq) error {
-	tx, err := m.db.BeginTx(m.ctx, nil)
+func (m *model) update(c context.Context, id int64, model examplereq) error {
+	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error("apiIssue", zap.Error(err))
 		return config.NewServerError(err)
 	}
 
-	exampleGetQuery, err := tx.PrepareContext(m.ctx, "SELECT id FROM examples WHERE id=?;")
+	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=?;")
 	if err != nil {
 		m.log.Error("dbError", zap.Error(err))
 		return config.NewDBError(err)
 	}
 
 	var example examplemodel
-	err = exampleGetQuery.QueryRowContext(m.ctx, id).Scan(&example.ID)
+	err = exampleGetQuery.QueryRowContext(c, id).Scan(&example.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			m.log.Error("notFound", zap.Error(err))
@@ -132,13 +135,13 @@ func (m *model) update(id int64, model examplereq) error {
 		return config.NewDBError(err)
 	}
 
-	exampleUpdateQuery, err := tx.PrepareContext(m.ctx, "UPDATE examples SET name=?, updated_at=? WHERE id=?;")
+	exampleUpdateQuery, err := tx.PrepareContext(c, "UPDATE examples SET name=?, updated_at=? WHERE id=?;")
 	if err != nil {
 		m.log.Error("dbError", zap.Error(err))
 		return config.NewDBError(err)
 	}
 
-	_, err = exampleUpdateQuery.ExecContext(m.ctx, model.Name, time.Now(), example.ID)
+	_, err = exampleUpdateQuery.ExecContext(c, model.Name, time.Now(), example.ID)
 	if err != nil {
 		m.log.Error("dbError", zap.Error(err))
 		return config.NewDBError(err)
@@ -153,21 +156,21 @@ func (m *model) update(id int64, model examplereq) error {
 	return nil
 }
 
-func (m *model) delete(id int64) error {
-	tx, err := m.db.BeginTx(m.ctx, nil)
+func (m *model) delete(c context.Context, id int64) error {
+	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error("apiIssue", zap.Error(err))
 		return config.NewServerError(err)
 	}
 
-	exampleGetQuery, err := tx.PrepareContext(m.ctx, "SELECT id FROM examples WHERE id=?;")
+	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=?;")
 	if err != nil {
 		m.log.Error("dbError", zap.Error(err))
 		return config.NewDBError(err)
 	}
 
 	var example examplemodel
-	err = exampleGetQuery.QueryRowContext(m.ctx, id).Scan(&example.ID)
+	err = exampleGetQuery.QueryRowContext(c, id).Scan(&example.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			m.log.Error("notFound", zap.Error(err))
@@ -177,13 +180,13 @@ func (m *model) delete(id int64) error {
 		return config.NewDBError(err)
 	}
 
-	exampleDeleteQuery, err := tx.PrepareContext(m.ctx, "DELETE FROM examples WHERE id=?;")
+	exampleDeleteQuery, err := tx.PrepareContext(c, "DELETE FROM examples WHERE id=?;")
 	if err != nil {
 		m.log.Error("dbError", zap.Error(err))
 		return config.NewDBError(err)
 	}
 
-	_, err = exampleDeleteQuery.ExecContext(m.ctx, example.ID)
+	_, err = exampleDeleteQuery.ExecContext(c, example.ID)
 	if err != nil {
 		m.log.Error("dbError", zap.Error(err))
 		return config.NewDBError(err)

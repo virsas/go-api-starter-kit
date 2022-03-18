@@ -1,7 +1,6 @@
 package example
 
 import (
-	"context"
 	"database/sql"
 	"go-api-starter-kit/middlewares"
 
@@ -9,8 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func Routes(r *gin.Engine, apiPath string, db *sql.DB, log *zap.Logger, ctx context.Context) {
-	ctrl := &controller{db: db, log: log, ctx: ctx}
+func Routes(r *gin.Engine, apiPath string, db *sql.DB, log *zap.Logger) {
+	ctrl := newController(db, log)
 
 	r.GET(
 		"/examples/",
