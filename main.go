@@ -30,6 +30,12 @@ func main() {
 		logger.Panic("Cannot init sql connection..", zap.Error(err))
 	}
 
+	err = utils.InitMigration(db)
+	if err != nil {
+		logger.Panic("Cannot migrate database..", zap.Error(err))
+		return
+	}
+
 	audit, err := utils.InitAudit()
 	if err != nil {
 		logger.Panic("Cannot init audit trail..", zap.Error(err))

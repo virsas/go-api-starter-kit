@@ -19,6 +19,8 @@ RUN cp /usr/share/zoneinfo/UTC /etc/localtime && \
 ADD keys ./keys
 # upload templates (eg PDF or Emailing templates)
 ADD templates ./templates
+# upload migrations for database
+ADD migrations ./migrations
 
 # copy the service
 COPY main .

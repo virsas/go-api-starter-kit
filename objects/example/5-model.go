@@ -18,22 +18,22 @@ func newModel(db *sql.DB, log *zap.Logger) *model {
 	return &model{db: db, log: log}
 }
 
-// examplereq struct
-type examplereq struct {
+// ExampleInput struct
+type ExampleInput struct {
 	Name *string `json:"name" validate:"required,min=2,max=255"`
 }
 
-// examplemodel struct
-type examplemodel struct {
+// Example struct
+type Example struct {
 	ID *int64 `json:"id"`
-	examplereq
+	ExampleInput
 	Updatedat *time.Time `json:"updatedat"`
 	Createdat *time.Time `json:"createdat"`
 }
 
-func (m *model) list() ([]examplemodel, error) {
-	var example examplemodel
-	var examples []examplemodel = []examplemodel{}
+func (m *model) list(aid int) ([]Example, error) {
+	var example Example
+	var examples []Example = []Example{}
 
 	exampleListQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples ORDER BY id DESC;")
 	if err != nil {
@@ -60,7 +60,7 @@ func (m *model) list() ([]examplemodel, error) {
 	return examples, nil
 }
 
-func (m *model) create(c context.Context, model examplereq) error {
+func (m *model) create(c context.Context, model ExampleInput, aid int) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error("apiIssue", zap.Error(err))
@@ -89,8 +89,8 @@ func (m *model) create(c context.Context, model examplereq) error {
 	return nil
 }
 
-func (m *model) show(id int64) (examplemodel, error) {
-	var example examplemodel
+func (m *model) show(id int64, aid int) (Example, error) {
+	var example Example
 
 	exampleShowQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples WHERE id=?;")
 	if err != nil {
@@ -111,7 +111,7 @@ func (m *model) show(id int64) (examplemodel, error) {
 	return example, nil
 }
 
-func (m *model) update(c context.Context, id int64, model examplereq) error {
+func (m *model) update(c context.Context, id int64, model ExampleInput, aid int) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error("apiIssue", zap.Error(err))
@@ -124,7 +124,7 @@ func (m *model) update(c context.Context, id int64, model examplereq) error {
 		return config.NewDBError(err)
 	}
 
-	var example examplemodel
+	var example Example
 	err = exampleGetQuery.QueryRowContext(c, id).Scan(&example.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -156,7 +156,7 @@ func (m *model) update(c context.Context, id int64, model examplereq) error {
 	return nil
 }
 
-func (m *model) delete(c context.Context, id int64) error {
+func (m *model) delete(c context.Context, id int64, aid int) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error("apiIssue", zap.Error(err))
@@ -169,7 +169,7 @@ func (m *model) delete(c context.Context, id int64) error {
 		return config.NewDBError(err)
 	}
 
-	var example examplemodel
+	var example Example
 	err = exampleGetQuery.QueryRowContext(c, id).Scan(&example.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {

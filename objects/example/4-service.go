@@ -18,17 +18,17 @@ func newService(db *sql.DB, log *zap.Logger) *service {
 	return &service{db: db, log: log, m: m}
 }
 
-func (s *service) list() ([]examplemodel, error) {
-	var examples []examplemodel = []examplemodel{}
-	examples, err := s.m.list()
+func (s *service) list(aid int) ([]Example, error) {
+	var examples []Example = []Example{}
+	examples, err := s.m.list(aid)
 	if err != nil {
 		return examples, err
 	}
 	return examples, nil
 }
 
-func (s *service) create(c context.Context, example examplereq) error {
-	err := s.m.create(c, example)
+func (s *service) create(c context.Context, example ExampleInput, aid int) error {
+	err := s.m.create(c, example, aid)
 	if err != nil {
 		return err
 	}
@@ -36,9 +36,9 @@ func (s *service) create(c context.Context, example examplereq) error {
 	return nil
 }
 
-func (s *service) show(id int64) (examplemodel, error) {
-	var example examplemodel
-	example, err := s.m.show(id)
+func (s *service) show(id int64, aid int) (Example, error) {
+	var example Example
+	example, err := s.m.show(id, aid)
 	if err != nil {
 		return example, err
 	}
@@ -46,8 +46,8 @@ func (s *service) show(id int64) (examplemodel, error) {
 	return example, nil
 }
 
-func (s *service) update(c context.Context, id int64, example examplereq) error {
-	err := s.m.update(c, id, example)
+func (s *service) update(c context.Context, id int64, example ExampleInput, aid int) error {
+	err := s.m.update(c, id, example, aid)
 	if err != nil {
 		return err
 	}
@@ -55,8 +55,8 @@ func (s *service) update(c context.Context, id int64, example examplereq) error 
 	return nil
 }
 
-func (s *service) delete(c context.Context, id int64) error {
-	err := s.m.delete(c, id)
+func (s *service) delete(c context.Context, id int64, aid int) error {
+	err := s.m.delete(c, id, aid)
 	if err != nil {
 		return err
 	}

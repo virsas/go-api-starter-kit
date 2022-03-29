@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"go-api-starter-kit/config"
+	"go-api-starter-kit/helpers"
 	"io"
 	"io/ioutil"
 
@@ -20,7 +21,7 @@ func validateExample(log *zap.Logger) gin.HandlerFunc {
 		c.Request.Body.Close()
 		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(data))
 
-		var example examplereq
+		var example ExampleInput
 		err = json.Unmarshal(data, &example)
 		if err != nil {
 			c.JSON(config.REQUEST_ERROR, gin.H{
@@ -31,6 +32,8 @@ func validateExample(log *zap.Logger) gin.HandlerFunc {
 		}
 
 		validate := validator.New()
+		validate.RegisterValidation("alphanumspace", helpers.AlphaNumSpaceValid)
+		validate.RegisterValidation("alphaspace", helpers.AlphaSpaceValid)
 		err = validate.Struct(&example)
 		if err != nil {
 			log.Error("Validation error", zap.Error(err))

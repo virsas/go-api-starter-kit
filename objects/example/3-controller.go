@@ -22,70 +22,32 @@ func newController(db *sql.DB, log *zap.Logger) *controller {
 }
 
 func (ctrl *controller) list(c *gin.Context) {
-	examples, err := ctrl.s.list()
-	if err != nil {
-		c.JSON(err.(*config.CustErr).Code(), gin.H{
-			"message": err.(*config.CustErr).Error(),
+	var err error
+	var examples []Example = []Example{}
+
+	aid, ok := c.MustGet("aid").(int)
+	if ok {
+		examples, err = ctrl.s.list(aid)
+		if err != nil {
+			c.JSON(err.(*config.CustErr).Code(), gin.H{
+				"message": err.(*config.CustErr).Error(),
+			})
+			return
+		}
+	} else {
+		c.JSON(config.REQUEST_ERROR, gin.H{
+			"message": config.REQUEST_STRING,
 		})
 		return
 	}
+
 	c.JSON(config.OK_STATUS, examples)
 }
 
 func (ctrl *controller) create(c *gin.Context) {
-	var example examplereq
-	err := json.NewDecoder(c.Request.Body).Decode(&example)
-	if err != nil {
-		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
-		c.JSON(config.SERVER_ERROR, gin.H{
-			"message": config.SERVER_STRING,
-		})
-		return
-	}
+	var err error
+	var example ExampleInput
 
-	err = ctrl.s.create(c, example)
-	if err != nil {
-		c.JSON(err.(*config.CustErr).Code(), gin.H{
-			"message": err.(*config.CustErr).Error(),
-		})
-		return
-	}
-	c.JSON(config.OK_STATUS, gin.H{
-		"message": config.OK_STRING,
-	})
-}
-
-func (ctrl *controller) show(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
-	if err != nil {
-		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
-		c.JSON(config.SERVER_ERROR, gin.H{
-			"message": config.SERVER_STRING,
-		})
-		return
-	}
-
-	example, err := ctrl.s.show(id)
-	if err != nil {
-		c.JSON(err.(*config.CustErr).Code(), gin.H{
-			"message": err.(*config.CustErr).Error(),
-		})
-		return
-	}
-	c.JSON(config.OK_STATUS, example)
-}
-
-func (ctrl *controller) update(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
-	if err != nil {
-		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
-		c.JSON(config.SERVER_ERROR, gin.H{
-			"message": config.SERVER_STRING,
-		})
-		return
-	}
-
-	var example examplereq
 	err = json.NewDecoder(c.Request.Body).Decode(&example)
 	if err != nil {
 		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
@@ -95,13 +57,97 @@ func (ctrl *controller) update(c *gin.Context) {
 		return
 	}
 
-	err = ctrl.s.update(c, id, example)
-	if err != nil {
-		c.JSON(err.(*config.CustErr).Code(), gin.H{
-			"message": err.(*config.CustErr).Error(),
+	aid, ok := c.MustGet("aid").(int)
+	if ok {
+		err = ctrl.s.create(c, example, aid)
+		if err != nil {
+			c.JSON(err.(*config.CustErr).Code(), gin.H{
+				"message": err.(*config.CustErr).Error(),
+			})
+			return
+		}
+	} else {
+		c.JSON(config.REQUEST_ERROR, gin.H{
+			"message": config.REQUEST_STRING,
 		})
 		return
 	}
+
+	c.JSON(config.OK_STATUS, gin.H{
+		"message": config.OK_STRING,
+	})
+}
+
+func (ctrl *controller) show(c *gin.Context) {
+	var err error
+	var example Example
+
+	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
+	if err != nil {
+		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
+		c.JSON(config.SERVER_ERROR, gin.H{
+			"message": config.SERVER_STRING,
+		})
+		return
+	}
+
+	aid, ok := c.MustGet("aid").(int)
+	if ok {
+		example, err = ctrl.s.show(id, aid)
+		if err != nil {
+			c.JSON(err.(*config.CustErr).Code(), gin.H{
+				"message": err.(*config.CustErr).Error(),
+			})
+			return
+		}
+	} else {
+		c.JSON(config.REQUEST_ERROR, gin.H{
+			"message": config.REQUEST_STRING,
+		})
+		return
+	}
+
+	c.JSON(config.OK_STATUS, example)
+}
+
+func (ctrl *controller) update(c *gin.Context) {
+	var err error
+
+	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
+	if err != nil {
+		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
+		c.JSON(config.SERVER_ERROR, gin.H{
+			"message": config.SERVER_STRING,
+		})
+		return
+	}
+
+	var example ExampleInput
+	err = json.NewDecoder(c.Request.Body).Decode(&example)
+	if err != nil {
+		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
+		c.JSON(config.SERVER_ERROR, gin.H{
+			"message": config.SERVER_STRING,
+		})
+		return
+	}
+
+	aid, ok := c.MustGet("aid").(int)
+	if ok {
+		err = ctrl.s.update(c, id, example, aid)
+		if err != nil {
+			c.JSON(err.(*config.CustErr).Code(), gin.H{
+				"message": err.(*config.CustErr).Error(),
+			})
+			return
+		}
+	} else {
+		c.JSON(config.REQUEST_ERROR, gin.H{
+			"message": config.REQUEST_STRING,
+		})
+		return
+	}
+
 	c.JSON(config.OK_STATUS, gin.H{
 		"message": config.OK_STRING,
 	})
@@ -117,13 +163,22 @@ func (ctrl *controller) delete(c *gin.Context) {
 		return
 	}
 
-	err = ctrl.s.delete(c, id)
-	if err != nil {
-		c.JSON(err.(*config.CustErr).Code(), gin.H{
-			"message": err.(*config.CustErr).Error(),
+	aid, ok := c.MustGet("aid").(int)
+	if ok {
+		err = ctrl.s.delete(c, id, aid)
+		if err != nil {
+			c.JSON(err.(*config.CustErr).Code(), gin.H{
+				"message": err.(*config.CustErr).Error(),
+			})
+			return
+		}
+	} else {
+		c.JSON(config.REQUEST_ERROR, gin.H{
+			"message": config.REQUEST_STRING,
 		})
 		return
 	}
+
 	c.JSON(config.OK_STATUS, gin.H{
 		"message": config.OK_STRING,
 	})

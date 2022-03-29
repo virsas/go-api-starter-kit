@@ -33,6 +33,29 @@ VSS_DB_PSQL_MAX_OPEN_CONNECTIONS=50
 VSS_DB_PSQL_MAX_IDLE_CONNECTIONS=50
 ```
 
+## Migration
+
+Migration is done by using a golang-migrate library. For more details, please have look at <>
+
+### CLI
+
+Installation
+
+``` bash
+# for mysql
+go install -tags 'mysql' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+```
+
+Migration creation:
+
+``` bash
+migrate create -ext sql -dir migrations test
+```
+
+### Migrate
+
+Migration is run on API start up and runs all migrations from ./migrations directory
+
 ## Audit trail
 
 At this moment the starter kit works with Cloudwatch log groups, in the future I will add DynamoDB too.
