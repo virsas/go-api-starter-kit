@@ -33,7 +33,6 @@ func main() {
 	err = utils.InitMigration(db)
 	if err != nil {
 		logger.Panic("Cannot migrate database..", zap.Error(err))
-		return
 	}
 
 	audit, err := utils.InitAudit()

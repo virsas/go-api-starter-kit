@@ -35,7 +35,7 @@ VSS_DB_PSQL_MAX_IDLE_CONNECTIONS=50
 
 ## Migration
 
-Migration is done by using a golang-migrate library. For more details, please have look at <>
+Migration is done by using a golang-migrate library. For more details, please have look at <https://github.com/golang-migrate/migrate>
 
 ### CLI
 
