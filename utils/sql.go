@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	_ "github.com/lib/pq"
-	vssdb "github.com/virsas/go-mod-db"
 )
 
 func InitSQL() (*sql.DB, error) {
@@ -36,7 +35,7 @@ func InitSQL() (*sql.DB, error) {
 	dbAccountNameValue, dbAccountNamePresent := os.LookupEnv("DB_NAME")
 	if dbAccountNamePresent {
 		dbAccountName = dbAccountNameValue
-	}
+	} // initMysqlDB function
 
 	var dbAccountPortStr string = "5432"
 	dbAccountPortStrValue, dbAccountPortStrPresent := os.LookupEnv("DB_PORT")
@@ -49,10 +48,47 @@ func InitSQL() (*sql.DB, error) {
 		return db, err
 	}
 
-	db, err = vssdb.InitMysqlDB(dbAccountUser, dbAccountPass, dbAccountHost, dbAccountPort, dbAccountName)
+	db, err = initMysqlDB(dbAccountUser, dbAccountPass, dbAccountHost, dbAccountPort, dbAccountName)
 	if err != nil {
 		return db, err
 	}
 
 	return db, nil
+}
+
+func initMysqlDB(user string, password string, hostname string, port int, database string) (*sql.DB, error) {
+	var err error
+	var db *sql.DB
+
+	dbSource := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true", user, password, hostname, port, database)
+	db, err = sql.Open("mysql", dbSource)
+	if err != nil {
+		return db, err
+	}
+	if err = db.Ping(); err != nil {
+		return db, err
+	}
+
+	openCons, openConsPresent := os.LookupEnv("DB_MAX_OPEN_CONNECTIONS")
+	idleCons, idleConsPresent := os.LookupEnv("DB_MAX_IDLE_CONNECTIONS")
+
+	db.SetMaxOpenConns(25)
+	if openConsPresent {
+		openConsInt, err := strconv.Atoi(openCons)
+		if err != nil {
+			return db, err
+		}
+		db.SetMaxOpenConns(openConsInt)
+	}
+
+	db.SetMaxIdleConns(25)
+	if idleConsPresent {
+		idleConsInt, err := strconv.Atoi(idleCons)
+		if err != nil {
+			return db, err
+		}
+		db.SetMaxIdleConns(idleConsInt)
+	}
+
+	return db, err
 }
