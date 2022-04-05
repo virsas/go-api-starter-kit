@@ -4,16 +4,16 @@ import (
 	"crypto/rsa"
 	"errors"
 	"go-api-starter-kit/config"
+	"go-api-starter-kit/utils/logger"
 	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"go.uber.org/zap"
 )
 
-func Auth(validateJWT bool, log *zap.Logger) gin.HandlerFunc {
+func Auth(validateJWT bool, log *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := getAuthToken(c, log)
 		if err != nil {
@@ -55,7 +55,7 @@ func Auth(validateJWT bool, log *zap.Logger) gin.HandlerFunc {
 	}
 }
 
-func getClaims(c *gin.Context, token *jwt.Token, log *zap.Logger) error {
+func getClaims(c *gin.Context, token *jwt.Token, log *logger.Logger) error {
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if ok {
@@ -66,7 +66,7 @@ func getClaims(c *gin.Context, token *jwt.Token, log *zap.Logger) error {
 	return nil
 }
 
-func getAuthToken(c *gin.Context, log *zap.Logger) (string, error) {
+func getAuthToken(c *gin.Context, log *logger.Logger) (string, error) {
 	var token string
 
 	reqToken := c.Request.Header.Get("Authorization")
@@ -82,19 +82,19 @@ func getAuthToken(c *gin.Context, log *zap.Logger) (string, error) {
 	return token, nil
 }
 
-func getPem(log *zap.Logger) (*rsa.PublicKey, error) {
+func getPem(log *logger.Logger) (*rsa.PublicKey, error) {
 	currentDir, _ := os.Getwd()
 	var pubKeyPath = currentDir + "/keys/jwtRS256.key.pub"
 
 	verifyBytes, err := ioutil.ReadFile(pubKeyPath)
 	if err != nil {
-		log.Error("fileParseError", zap.Error(err))
+		log.Error(err.Error())
 		return nil, config.NewServerError(err)
 	}
 
 	verifiedPem, err := jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
 	if err != nil {
-		log.Error("fileVerifyError", zap.Error(err))
+		log.Error(err.Error())
 		return nil, config.NewServerError(err)
 	}
 

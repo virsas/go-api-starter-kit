@@ -2,12 +2,12 @@ package middlewares
 
 import (
 	"go-api-starter-kit/config"
+	"go-api-starter-kit/utils/logger"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
-func AllowRoles(log *zap.Logger, allowedRoles []string) gin.HandlerFunc {
+func AllowRoles(log *logger.Logger, allowedRoles []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rolesString := c.MustGet("roles")
 		userRoles := make([]string, len(rolesString.([]interface{})))

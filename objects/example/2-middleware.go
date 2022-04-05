@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"go-api-starter-kit/config"
 	"go-api-starter-kit/helpers"
+	"go-api-starter-kit/utils/logger"
 	"io"
 	"io/ioutil"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
-	"go.uber.org/zap"
 )
 
-func validateExample(log *zap.Logger) gin.HandlerFunc {
+func validateExample(log *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 
@@ -36,7 +36,7 @@ func validateExample(log *zap.Logger) gin.HandlerFunc {
 		validate.RegisterValidation("alphaspace", helpers.AlphaSpaceValid)
 		err = validate.Struct(&example)
 		if err != nil {
-			log.Error("Validation error", zap.Error(err))
+			log.Error(err.Error())
 			c.JSON(config.VALID_ERROR, gin.H{
 				"message": config.VALID_STRING,
 			})

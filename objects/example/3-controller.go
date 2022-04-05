@@ -4,19 +4,19 @@ import (
 	"database/sql"
 	"encoding/json"
 	"go-api-starter-kit/config"
+	"go-api-starter-kit/utils/logger"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type controller struct {
 	db  *sql.DB
-	log *zap.Logger
+	log *logger.Logger
 	s   *service
 }
 
-func newController(db *sql.DB, log *zap.Logger) *controller {
+func newController(db *sql.DB, log *logger.Logger) *controller {
 	s := newService(db, log)
 	return &controller{db: db, log: log, s: s}
 }
@@ -50,7 +50,7 @@ func (ctrl *controller) create(c *gin.Context) {
 
 	err = json.NewDecoder(c.Request.Body).Decode(&example)
 	if err != nil {
-		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
+		ctrl.log.Error(err.Error())
 		c.JSON(config.SERVER_ERROR, gin.H{
 			"message": config.SERVER_STRING,
 		})
@@ -84,7 +84,7 @@ func (ctrl *controller) show(c *gin.Context) {
 
 	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
 	if err != nil {
-		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
+		ctrl.log.Error(err.Error())
 		c.JSON(config.SERVER_ERROR, gin.H{
 			"message": config.SERVER_STRING,
 		})
@@ -115,7 +115,7 @@ func (ctrl *controller) update(c *gin.Context) {
 
 	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
 	if err != nil {
-		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
+		ctrl.log.Error(err.Error())
 		c.JSON(config.SERVER_ERROR, gin.H{
 			"message": config.SERVER_STRING,
 		})
@@ -125,7 +125,7 @@ func (ctrl *controller) update(c *gin.Context) {
 	var example ExampleInput
 	err = json.NewDecoder(c.Request.Body).Decode(&example)
 	if err != nil {
-		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
+		ctrl.log.Error(err.Error())
 		c.JSON(config.SERVER_ERROR, gin.H{
 			"message": config.SERVER_STRING,
 		})
@@ -156,7 +156,7 @@ func (ctrl *controller) update(c *gin.Context) {
 func (ctrl *controller) delete(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
 	if err != nil {
-		ctrl.log.Error(config.SERVER_STRING, zap.Error(err))
+		ctrl.log.Error(err.Error())
 		c.JSON(config.SERVER_ERROR, gin.H{
 			"message": config.SERVER_STRING,
 		})

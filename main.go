@@ -3,12 +3,12 @@ package main
 import (
 	"go-api-starter-kit/routes"
 	"go-api-starter-kit/utils"
+	"go-api-starter-kit/utils/logger"
 	"log"
 	"net/http"
 
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.uber.org/zap"
 )
 
 func init() {
@@ -20,34 +20,34 @@ func init() {
 func main() {
 	var err error
 
-	logger, err := utils.InitLogger()
+	logger, err := logger.New()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	db, err := utils.InitSQL()
 	if err != nil {
-		logger.Panic("Cannot init sql connection..", zap.Error(err))
+		panic(err)
 	}
 
 	err = utils.InitMigration(db)
 	if err != nil {
-		logger.Panic("Cannot migrate database..", zap.Error(err))
+		panic(err)
 	}
 
 	audit, err := utils.InitAudit()
 	if err != nil {
-		logger.Panic("Cannot init audit trail..", zap.Error(err))
+		panic(err)
 	}
 
 	r, err := utils.InitRouter()
 	if err != nil {
-		logger.Panic("Cannot init gin router..", zap.Error(err))
+		panic(err)
 	}
 
 	routes.AddRoutes(r, db, logger, audit)
 
 	apiPort, prometheusPort := utils.InitPorts()
-	go func() { log.Fatal(http.ListenAndServe(":"+prometheusPort, promhttp.Handler())) }()
+	go func() { panic(http.ListenAndServe(":"+prometheusPort, promhttp.Handler())) }()
 	r.Run(":" + apiPort)
 }

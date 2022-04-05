@@ -6,13 +6,13 @@ import (
 	"go-api-starter-kit/objects/example"
 	"go-api-starter-kit/objects/health"
 	"go-api-starter-kit/utils"
+	"go-api-starter-kit/utils/logger"
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
-func AddRoutes(r *gin.Engine, db *sql.DB, logger *zap.Logger, audit *utils.Audit) {
+func AddRoutes(r *gin.Engine, db *sql.DB, logger *logger.Logger, audit *utils.Audit) {
 	var apiPath string = ""
 	apiPathValue, apiPathPresent := os.LookupEnv("API_PATH")
 	if apiPathPresent {

@@ -3,18 +3,18 @@ package health
 import (
 	"database/sql"
 	"go-api-starter-kit/config"
+	"go-api-starter-kit/utils/logger"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type controller struct {
 	db  *sql.DB
-	log *zap.Logger
+	log *logger.Logger
 	s   *service
 }
 
-func newController(db *sql.DB, log *zap.Logger) *controller {
+func newController(db *sql.DB, log *logger.Logger) *controller {
 	s := newService(db, log)
 	return &controller{db: db, log: log, s: s}
 }

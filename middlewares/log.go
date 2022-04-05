@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-api-starter-kit/utils"
+	"go-api-starter-kit/utils/logger"
 	"io"
 	"io/ioutil"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type logBody struct {
@@ -24,7 +24,7 @@ type logMessage struct {
 	Label   string  `json:"label"`
 }
 
-func Log(audit *utils.Audit, log *zap.Logger) gin.HandlerFunc {
+func Log(audit *utils.Audit, log *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 
@@ -37,12 +37,12 @@ func Log(audit *utils.Audit, log *zap.Logger) gin.HandlerFunc {
 		message := &logMessage{Message: *body, Level: "info", Label: "audit"}
 		finalMessage, err := json.Marshal(message)
 		if err != nil {
-			log.Error("JSON marshal error", zap.Error(err))
+			log.Error(err.Error())
 		}
 
 		err = utils.CwWriteLog(audit, string(finalMessage))
 		if err != nil {
-			log.Error("JSON marshal error", zap.Error(err))
+			log.Error(err.Error())
 		}
 		c.Next()
 	}

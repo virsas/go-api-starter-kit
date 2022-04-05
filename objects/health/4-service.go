@@ -2,17 +2,16 @@ package health
 
 import (
 	"database/sql"
-
-	"go.uber.org/zap"
+	"go-api-starter-kit/utils/logger"
 )
 
 type service struct {
 	db  *sql.DB
-	log *zap.Logger
+	log *logger.Logger
 	m   *model
 }
 
-func newService(db *sql.DB, log *zap.Logger) *service {
+func newService(db *sql.DB, log *logger.Logger) *service {
 	m := newModel(db, log)
 	return &service{db: db, log: log, m: m}
 }
