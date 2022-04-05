@@ -119,3 +119,9 @@ curl -X PUT http://localhost:8080/api/v1/examples/4 -H 'Content-Type: applicatio
 # delete
 curl -X DELETE http://localhost:8080/api/v1/examples/6
 ```
+
+## Testing
+
+``` bash
+go-api-starter-kit
+```
