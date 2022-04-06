@@ -8,33 +8,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Routes(r *gin.Engine, apiPath string, db *sql.DB, log *logger.Logger) {
+func Routes(r *gin.Engine, apiPath string, db *sql.DB, log logger.LoggerHandler) {
 	ctrl := newController(db, log)
 
 	r.GET(
-		"/examples/",
+		apiPath+"/examples/",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		ctrl.list,
 	)
 	r.POST(
-		"/examples/",
+		apiPath+"/examples/",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		validateExample(log),
 		ctrl.create,
 	)
 	r.GET(
-		"/examples/:ID",
+		apiPath+"/examples/:ID",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		ctrl.show,
 	)
 	r.PATCH(
-		"/examples/:ID",
+		apiPath+"/examples/:ID",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		validateExample(log),
 		ctrl.update,
 	)
 	r.DELETE(
-		"/examples/:ID",
+		apiPath+"/examples/:ID",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		ctrl.delete,
 	)

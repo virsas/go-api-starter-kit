@@ -1,21 +1,31 @@
 package logger
 
-type Logger struct{}
+import "go.uber.org/zap"
 
-func New() (*Logger, error) {
-	logger := Logger{}
+type LoggerHandler interface {
+	Panic(msg string)
+	Error(msg string)
+}
 
-	err := initZap()
+type logger struct {
+	zap *zap.Logger
+}
+
+func New() (LoggerHandler, error) {
+	l := &logger{}
+
+	zap, err := zap.NewProduction()
 	if err != nil {
 		return nil, err
 	}
+	l.zap = zap
 
-	return &logger, err
+	return l, err
 }
 
-func (l Logger) Panic(msg string) {
-	logger.Panic(msg)
+func (l *logger) Panic(msg string) {
+	l.zap.Panic(msg)
 }
-func (l Logger) Error(msg string) {
-	logger.Panic(msg)
+func (l *logger) Error(msg string) {
+	l.zap.Panic(msg)
 }

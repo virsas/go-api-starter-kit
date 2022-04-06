@@ -5,14 +5,14 @@ import (
 	"go-api-starter-kit/middlewares"
 	"go-api-starter-kit/objects/example"
 	"go-api-starter-kit/objects/health"
-	"go-api-starter-kit/utils"
+	"go-api-starter-kit/utils/audit"
 	"go-api-starter-kit/utils/logger"
 	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AddRoutes(r *gin.Engine, db *sql.DB, logger *logger.Logger, audit *utils.Audit) {
+func AddRoutes(r *gin.Engine, d *sql.DB, l logger.LoggerHandler, a audit.AuditHandler) {
 	var apiPath string = ""
 	apiPathValue, apiPathPresent := os.LookupEnv("API_PATH")
 	if apiPathPresent {
@@ -20,12 +20,12 @@ func AddRoutes(r *gin.Engine, db *sql.DB, logger *logger.Logger, audit *utils.Au
 	}
 
 	// order is important
-	health.Routes(r, apiPath, db, logger)
+	health.Routes(r, apiPath, d, l)
 
 	// all routes should be below authentication, only health route is available without authentication
-	r.Use(middlewares.Auth(true, logger))
-	r.Use(middlewares.User(db, logger))
-	r.Use(middlewares.Log(audit, logger))
+	r.Use(middlewares.Auth(true, l))
+	r.Use(middlewares.User(d, l))
+	r.Use(middlewares.Log(a, l))
 
-	example.Routes(r, apiPath, db, logger)
+	example.Routes(r, apiPath, d, l)
 }

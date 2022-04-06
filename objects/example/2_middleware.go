@@ -3,8 +3,8 @@ package example
 import (
 	"bytes"
 	"encoding/json"
-	"go-api-starter-kit/config"
 	"go-api-starter-kit/helpers"
+	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
 	"io"
 	"io/ioutil"
@@ -13,7 +13,7 @@ import (
 	"github.com/go-playground/validator"
 )
 
-func validateExample(log *logger.Logger) gin.HandlerFunc {
+func validateExample(log logger.LoggerHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 

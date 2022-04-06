@@ -1,4 +1,4 @@
-package utils
+package db
 
 import (
 	"database/sql"
@@ -9,7 +9,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func InitMigration(db *sql.DB) error {
+func Migrate(db *sql.DB, path string) error {
 	var err error
 
 	var migrationTable string = "golang_migrations"
@@ -25,7 +25,7 @@ func InitMigration(db *sql.DB) error {
 		return err
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://migrations", "mysql", driver)
+	m, err := migrate.NewWithDatabaseInstance(path, "mysql", driver)
 	if err != nil {
 		return err
 	}

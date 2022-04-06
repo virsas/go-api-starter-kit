@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"database/sql"
-	"go-api-starter-kit/config"
+	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +13,7 @@ type usermodel struct {
 	locked sql.NullBool
 }
 
-func User(db *sql.DB, log *logger.Logger) gin.HandlerFunc {
+func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 		var user usermodel

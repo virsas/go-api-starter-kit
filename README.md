@@ -79,7 +79,7 @@ func getClaims(c *gin.Context, token *jwt.Token, log *zap.Logger) error {
 
 ## Errors
 
-see config/errors for more details. At this moment, those errors are returned in message string.
+see helpers/errors for more details. At this moment, those errors are returned in message string.
 
 - OK_STRING = "OK"
 - DB_STRING = "dbError"

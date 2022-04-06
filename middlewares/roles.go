@@ -1,13 +1,13 @@
 package middlewares
 
 import (
-	"go-api-starter-kit/config"
+	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AllowRoles(log *logger.Logger, allowedRoles []string) gin.HandlerFunc {
+func AllowRoles(log logger.LoggerHandler, allowedRoles []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rolesString := c.MustGet("roles")
 		userRoles := make([]string, len(rolesString.([]interface{})))

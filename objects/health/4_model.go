@@ -7,10 +7,10 @@ import (
 
 type model struct {
 	db  *sql.DB
-	log *logger.Logger
+	log logger.LoggerHandler
 }
 
-func newModel(db *sql.DB, log *logger.Logger) *model {
+func newModel(db *sql.DB, log logger.LoggerHandler) *model {
 	return &model{db: db, log: log}
 }
 

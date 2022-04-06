@@ -2,8 +2,11 @@ package main
 
 import (
 	"go-api-starter-kit/routes"
-	"go-api-starter-kit/utils"
+	"go-api-starter-kit/utils/audit"
+	"go-api-starter-kit/utils/config"
+	"go-api-starter-kit/utils/db"
 	"go-api-starter-kit/utils/logger"
+	"go-api-starter-kit/utils/router"
 	"log"
 	"net/http"
 
@@ -20,34 +23,32 @@ func init() {
 func main() {
 	var err error
 
-	logger, err := logger.New()
+	l, err := logger.New()
 	if err != nil {
 		panic(err)
 	}
 
-	db, err := utils.InitSQL()
+	d, err := db.New()
 	if err != nil {
-		panic(err)
+		l.Panic(err.Error())
+	}
+	if err := db.Migrate(d, "file://migrations"); err != nil {
+		l.Panic(err.Error())
 	}
 
-	err = utils.InitMigration(db)
+	a, err := audit.New()
 	if err != nil {
-		panic(err)
+		l.Panic(err.Error())
 	}
 
-	audit, err := utils.InitAudit()
+	r, err := router.New("./assets")
 	if err != nil {
-		panic(err)
+		l.Panic(err.Error())
 	}
 
-	r, err := utils.InitRouter()
-	if err != nil {
-		panic(err)
-	}
+	routes.AddRoutes(r, d, l, a)
 
-	routes.AddRoutes(r, db, logger, audit)
-
-	apiPort, prometheusPort := utils.InitPorts()
-	go func() { panic(http.ListenAndServe(":"+prometheusPort, promhttp.Handler())) }()
+	apiPort, prometheusPort := config.SetPorts()
+	go func() { l.Panic(http.ListenAndServe(":"+prometheusPort, promhttp.Handler()).Error()) }()
 	r.Run(":" + apiPort)
 }

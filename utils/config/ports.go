@@ -1,8 +1,8 @@
-package utils
+package config
 
 import "os"
 
-func InitPorts() (string, string) {
+func SetPorts() (string, string) {
 	var apiPort string = "8080"
 	apiPortValue, apiPortPresent := os.LookupEnv("API_PORT")
 	if apiPortPresent {

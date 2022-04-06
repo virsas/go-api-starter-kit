@@ -3,7 +3,7 @@ package middlewares
 import (
 	"crypto/rsa"
 	"errors"
-	"go-api-starter-kit/config"
+	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
 	"io/ioutil"
 	"os"
@@ -13,7 +13,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func Auth(validateJWT bool, log *logger.Logger) gin.HandlerFunc {
+func Auth(validateJWT bool, log logger.LoggerHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := getAuthToken(c, log)
 		if err != nil {
@@ -55,7 +55,7 @@ func Auth(validateJWT bool, log *logger.Logger) gin.HandlerFunc {
 	}
 }
 
-func getClaims(c *gin.Context, token *jwt.Token, log *logger.Logger) error {
+func getClaims(c *gin.Context, token *jwt.Token, log logger.LoggerHandler) error {
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if ok {
@@ -66,7 +66,7 @@ func getClaims(c *gin.Context, token *jwt.Token, log *logger.Logger) error {
 	return nil
 }
 
-func getAuthToken(c *gin.Context, log *logger.Logger) (string, error) {
+func getAuthToken(c *gin.Context, log logger.LoggerHandler) (string, error) {
 	var token string
 
 	reqToken := c.Request.Header.Get("Authorization")
@@ -82,7 +82,7 @@ func getAuthToken(c *gin.Context, log *logger.Logger) (string, error) {
 	return token, nil
 }
 
-func getPem(log *logger.Logger) (*rsa.PublicKey, error) {
+func getPem(log logger.LoggerHandler) (*rsa.PublicKey, error) {
 	currentDir, _ := os.Getwd()
 	var pubKeyPath = currentDir + "/keys/jwtRS256.key.pub"
 

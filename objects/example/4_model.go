@@ -3,17 +3,17 @@ package example
 import (
 	"context"
 	"database/sql"
-	"go-api-starter-kit/config"
+	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
 	"time"
 )
 
 type model struct {
 	db  *sql.DB
-	log *logger.Logger
+	log logger.LoggerHandler
 }
 
-func newModel(db *sql.DB, log *logger.Logger) *model {
+func newModel(db *sql.DB, log logger.LoggerHandler) *model {
 	return &model{db: db, log: log}
 }
 

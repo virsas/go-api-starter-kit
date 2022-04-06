@@ -2,7 +2,7 @@ package health
 
 import (
 	"database/sql"
-	"go-api-starter-kit/config"
+	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
 
 	"github.com/gin-gonic/gin"
@@ -10,17 +10,17 @@ import (
 
 type controller struct {
 	db  *sql.DB
-	log *logger.Logger
-	s   *service
+	log logger.LoggerHandler
+	m   *model
 }
 
-func newController(db *sql.DB, log *logger.Logger) *controller {
-	s := newService(db, log)
-	return &controller{db: db, log: log, s: s}
+func newController(db *sql.DB, log logger.LoggerHandler) *controller {
+	m := newModel(db, log)
+	return &controller{db: db, log: log, m: m}
 }
 
 func (ctrl *controller) show(ctx *gin.Context) {
-	dbstatus := ctrl.s.show()
+	dbstatus := ctrl.m.show()
 	ctx.JSON(config.OK_STATUS, gin.H{
 		"server":   "OK",
 		"database": dbstatus,

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"go-api-starter-kit/utils"
+	"go-api-starter-kit/utils/audit"
 	"go-api-starter-kit/utils/logger"
 	"io"
 	"io/ioutil"
@@ -24,7 +24,7 @@ type logMessage struct {
 	Label   string  `json:"label"`
 }
 
-func Log(audit *utils.Audit, log *logger.Logger) gin.HandlerFunc {
+func Log(a audit.AuditHandler, log logger.LoggerHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 
@@ -40,7 +40,7 @@ func Log(audit *utils.Audit, log *logger.Logger) gin.HandlerFunc {
 			log.Error(err.Error())
 		}
 
-		err = utils.CwWriteLog(audit, string(finalMessage))
+		err = a.Write(string(finalMessage))
 		if err != nil {
 			log.Error(err.Error())
 		}
