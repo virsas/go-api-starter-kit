@@ -81,13 +81,13 @@ func getClaims(c *gin.Context, token *jwt.Token, log *zap.Logger) error {
 
 see helpers/errors for more details. At this moment, those errors are returned in message string.
 
-- OK_STRING = "OK"
-- DB_STRING = "dbError"
-- SERVER_STRING = "apiError"
-- NOTFOUND_STRING = "notFound"
-- REQUEST_STRING = "requestError"
-- VALID_STRING = "validationError"
-- AUTH_STRING = "notAllowed"
+- STATUS_OK_STRING = "OK"
+- STATUS_DB_ERROR_STRING = "dbError"
+- STATUS_SERVER_ERROR_STRING = "apiError"
+- STATUS_NOTFOUND_ERROR_STRING = "notFound"
+- STATUS_REQUEST_ERROR_STRING = "requestError"
+- STATUS_VALIDATION_ERROR_STRING = "validationError"
+- STATUS_AUTH_ERROR_STRING = "notAllowed"
 
 ## Objects
 

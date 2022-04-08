@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
+	"go-api-starter-kit/utils/vars"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,8 +17,8 @@ func AllowRoles(log logger.LoggerHandler, allowedRoles []string) gin.HandlerFunc
 
 		if !includes(userRoles, allowedRoles) {
 			log.Error("Not allowed to access")
-			c.JSON(config.AUTH_ERROR, gin.H{
-				"message": config.AUTH_STRING,
+			c.JSON(vars.STATUS_AUTH_ERROR_CODE, gin.H{
+				"message": vars.STATUS_AUTH_ERROR_STRING,
 			})
 			c.Abort()
 			return

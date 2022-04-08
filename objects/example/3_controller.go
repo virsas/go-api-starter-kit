@@ -3,8 +3,8 @@ package example
 import (
 	"database/sql"
 	"encoding/json"
-	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
+	"go-api-starter-kit/utils/vars"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -29,19 +29,19 @@ func (ctrl *controller) list(c *gin.Context) {
 	if ok {
 		examples, err = ctrl.m.list(aid)
 		if err != nil {
-			c.JSON(err.(*config.CustErr).Code(), gin.H{
-				"message": err.(*config.CustErr).Error(),
+			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+				"message": err.(*vars.StatusErr).Error(),
 			})
 			return
 		}
 	} else {
-		c.JSON(config.REQUEST_ERROR, gin.H{
-			"message": config.REQUEST_STRING,
+		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
+			"message": vars.STATUS_REQUEST_ERROR_STRING,
 		})
 		return
 	}
 
-	c.JSON(config.OK_STATUS, examples)
+	c.JSON(vars.STATUS_OK_CODE, examples)
 }
 
 func (ctrl *controller) create(c *gin.Context) {
@@ -51,8 +51,8 @@ func (ctrl *controller) create(c *gin.Context) {
 	err = json.NewDecoder(c.Request.Body).Decode(&example)
 	if err != nil {
 		ctrl.log.Error(err.Error())
-		c.JSON(config.SERVER_ERROR, gin.H{
-			"message": config.SERVER_STRING,
+		c.JSON(vars.STATUS_SERVER_ERROR_CODE, gin.H{
+			"message": vars.STATUS_SERVER_ERROR_STRING,
 		})
 		return
 	}
@@ -61,20 +61,20 @@ func (ctrl *controller) create(c *gin.Context) {
 	if ok {
 		err = ctrl.m.create(c, example, aid)
 		if err != nil {
-			c.JSON(err.(*config.CustErr).Code(), gin.H{
-				"message": err.(*config.CustErr).Error(),
+			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+				"message": err.(*vars.StatusErr).Error(),
 			})
 			return
 		}
 	} else {
-		c.JSON(config.REQUEST_ERROR, gin.H{
-			"message": config.REQUEST_STRING,
+		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
+			"message": vars.STATUS_REQUEST_ERROR_STRING,
 		})
 		return
 	}
 
-	c.JSON(config.OK_STATUS, gin.H{
-		"message": config.OK_STRING,
+	c.JSON(vars.STATUS_OK_CODE, gin.H{
+		"message": vars.STATUS_OK_STRING,
 	})
 }
 
@@ -85,8 +85,8 @@ func (ctrl *controller) show(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
 	if err != nil {
 		ctrl.log.Error(err.Error())
-		c.JSON(config.SERVER_ERROR, gin.H{
-			"message": config.SERVER_STRING,
+		c.JSON(vars.STATUS_SERVER_ERROR_CODE, gin.H{
+			"message": vars.STATUS_SERVER_ERROR_STRING,
 		})
 		return
 	}
@@ -95,19 +95,19 @@ func (ctrl *controller) show(c *gin.Context) {
 	if ok {
 		example, err = ctrl.m.show(id, aid)
 		if err != nil {
-			c.JSON(err.(*config.CustErr).Code(), gin.H{
-				"message": err.(*config.CustErr).Error(),
+			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+				"message": err.(*vars.StatusErr).Error(),
 			})
 			return
 		}
 	} else {
-		c.JSON(config.REQUEST_ERROR, gin.H{
-			"message": config.REQUEST_STRING,
+		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
+			"message": vars.STATUS_REQUEST_ERROR_STRING,
 		})
 		return
 	}
 
-	c.JSON(config.OK_STATUS, example)
+	c.JSON(vars.STATUS_OK_CODE, example)
 }
 
 func (ctrl *controller) update(c *gin.Context) {
@@ -116,8 +116,8 @@ func (ctrl *controller) update(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
 	if err != nil {
 		ctrl.log.Error(err.Error())
-		c.JSON(config.SERVER_ERROR, gin.H{
-			"message": config.SERVER_STRING,
+		c.JSON(vars.STATUS_SERVER_ERROR_CODE, gin.H{
+			"message": vars.STATUS_SERVER_ERROR_STRING,
 		})
 		return
 	}
@@ -126,8 +126,8 @@ func (ctrl *controller) update(c *gin.Context) {
 	err = json.NewDecoder(c.Request.Body).Decode(&example)
 	if err != nil {
 		ctrl.log.Error(err.Error())
-		c.JSON(config.SERVER_ERROR, gin.H{
-			"message": config.SERVER_STRING,
+		c.JSON(vars.STATUS_SERVER_ERROR_CODE, gin.H{
+			"message": vars.STATUS_SERVER_ERROR_STRING,
 		})
 		return
 	}
@@ -136,20 +136,20 @@ func (ctrl *controller) update(c *gin.Context) {
 	if ok {
 		err = ctrl.m.update(c, id, example, aid)
 		if err != nil {
-			c.JSON(err.(*config.CustErr).Code(), gin.H{
-				"message": err.(*config.CustErr).Error(),
+			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+				"message": err.(*vars.StatusErr).Error(),
 			})
 			return
 		}
 	} else {
-		c.JSON(config.REQUEST_ERROR, gin.H{
-			"message": config.REQUEST_STRING,
+		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
+			"message": vars.STATUS_REQUEST_ERROR_STRING,
 		})
 		return
 	}
 
-	c.JSON(config.OK_STATUS, gin.H{
-		"message": config.OK_STRING,
+	c.JSON(vars.STATUS_OK_CODE, gin.H{
+		"message": vars.STATUS_OK_STRING,
 	})
 }
 
@@ -157,8 +157,8 @@ func (ctrl *controller) delete(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
 	if err != nil {
 		ctrl.log.Error(err.Error())
-		c.JSON(config.SERVER_ERROR, gin.H{
-			"message": config.SERVER_STRING,
+		c.JSON(vars.STATUS_SERVER_ERROR_CODE, gin.H{
+			"message": vars.STATUS_SERVER_ERROR_STRING,
 		})
 		return
 	}
@@ -167,19 +167,19 @@ func (ctrl *controller) delete(c *gin.Context) {
 	if ok {
 		err = ctrl.m.delete(c, id, aid)
 		if err != nil {
-			c.JSON(err.(*config.CustErr).Code(), gin.H{
-				"message": err.(*config.CustErr).Error(),
+			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+				"message": err.(*vars.StatusErr).Error(),
 			})
 			return
 		}
 	} else {
-		c.JSON(config.REQUEST_ERROR, gin.H{
-			"message": config.REQUEST_STRING,
+		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
+			"message": vars.STATUS_REQUEST_ERROR_STRING,
 		})
 		return
 	}
 
-	c.JSON(config.OK_STATUS, gin.H{
-		"message": config.OK_STRING,
+	c.JSON(vars.STATUS_OK_CODE, gin.H{
+		"message": vars.STATUS_OK_STRING,
 	})
 }

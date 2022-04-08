@@ -3,8 +3,8 @@ package middlewares
 import (
 	"crypto/rsa"
 	"errors"
-	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
+	"go-api-starter-kit/utils/vars"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -17,8 +17,8 @@ func Auth(validateJWT bool, log logger.LoggerHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := getAuthToken(c, log)
 		if err != nil {
-			c.JSON(err.(*config.CustErr).Code(), gin.H{
-				"message": err.(*config.CustErr).Error(),
+			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+				"message": err.(*vars.StatusErr).Error(),
 			})
 			return
 		}
@@ -26,8 +26,8 @@ func Auth(validateJWT bool, log logger.LoggerHandler) gin.HandlerFunc {
 		var parsedToken *jwt.Token
 		pem, err := getPem(log)
 		if err != nil {
-			c.JSON(err.(*config.CustErr).Code(), gin.H{
-				"message": err.(*config.CustErr).Error(),
+			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+				"message": err.(*vars.StatusErr).Error(),
 			})
 			return
 		}
@@ -35,8 +35,8 @@ func Auth(validateJWT bool, log logger.LoggerHandler) gin.HandlerFunc {
 		parsedToken, err = jwt.Parse(token, func(token *jwt.Token) (interface{}, error) { return pem, nil })
 		if err != nil {
 			log.Error("No token error")
-			c.JSON(config.SERVER_ERROR, gin.H{
-				"message": config.SERVER_STRING,
+			c.JSON(vars.STATUS_SERVER_ERROR_CODE, gin.H{
+				"message": vars.STATUS_SERVER_ERROR_STRING,
 			})
 			c.Abort()
 			return
@@ -44,8 +44,8 @@ func Auth(validateJWT bool, log logger.LoggerHandler) gin.HandlerFunc {
 
 		err = getClaims(c, parsedToken, log)
 		if err != nil {
-			c.JSON(err.(*config.CustErr).Code(), gin.H{
-				"message": err.(*config.CustErr).Error(),
+			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+				"message": err.(*vars.StatusErr).Error(),
 			})
 			c.Abort()
 			return
@@ -61,7 +61,7 @@ func getClaims(c *gin.Context, token *jwt.Token, log logger.LoggerHandler) error
 	if ok {
 		c.Set("uid", claims["uid"])
 	} else {
-		return config.NewServerError(errors.New("getClaimsError"))
+		return vars.StatusServerError(errors.New("getClaimsError"))
 	}
 	return nil
 }
@@ -74,7 +74,7 @@ func getAuthToken(c *gin.Context, log logger.LoggerHandler) (string, error) {
 
 	if len(splitToken) != 2 {
 		log.Error("Header parse error")
-		return token, config.NewServerError(errors.New("headerIssue"))
+		return token, vars.StatusServerError(errors.New("headerIssue"))
 	}
 
 	token = strings.TrimSpace(splitToken[1])
@@ -89,13 +89,13 @@ func getPem(log logger.LoggerHandler) (*rsa.PublicKey, error) {
 	verifyBytes, err := ioutil.ReadFile(pubKeyPath)
 	if err != nil {
 		log.Error(err.Error())
-		return nil, config.NewServerError(err)
+		return nil, vars.StatusServerError(err)
 	}
 
 	verifiedPem, err := jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
 	if err != nil {
 		log.Error(err.Error())
-		return nil, config.NewServerError(err)
+		return nil, vars.StatusServerError(err)
 	}
 
 	return verifiedPem, nil

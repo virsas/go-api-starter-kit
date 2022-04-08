@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"go-api-starter-kit/helpers"
-	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
+	"go-api-starter-kit/utils/vars"
 	"io"
 	"io/ioutil"
 
@@ -24,8 +24,8 @@ func validateExample(log logger.LoggerHandler) gin.HandlerFunc {
 		var example ExampleInput
 		err = json.Unmarshal(data, &example)
 		if err != nil {
-			c.JSON(config.REQUEST_ERROR, gin.H{
-				"message": config.REQUEST_STRING,
+			c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
+				"message": vars.STATUS_REQUEST_ERROR_STRING,
 			})
 			c.Abort()
 			return
@@ -37,8 +37,8 @@ func validateExample(log logger.LoggerHandler) gin.HandlerFunc {
 		err = validate.Struct(&example)
 		if err != nil {
 			log.Error(err.Error())
-			c.JSON(config.VALID_ERROR, gin.H{
-				"message": config.VALID_STRING,
+			c.JSON(vars.STATUS_VALIDATION_ERROR_CODE, gin.H{
+				"message": vars.STATUS_VALIDATION_ERROR_STRING,
 			})
 			c.Abort()
 			return

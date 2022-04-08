@@ -2,8 +2,8 @@ package middlewares
 
 import (
 	"database/sql"
-	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
+	"go-api-starter-kit/utils/vars"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,23 +24,23 @@ func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 		if err != nil {
 			if err == sql.ErrNoRows {
 				log.Error(err.Error())
-				c.JSON(config.NOTFOUND_ERROR, gin.H{
-					"message": config.NOTFOUND_STRING,
+				c.JSON(vars.STATUS_NOTFOUND_ERROR_CODE, gin.H{
+					"message": vars.STATUS_NOTFOUND_ERROR_STRING,
 				})
 				c.Abort()
 				return
 			}
 			log.Error(err.Error())
-			c.JSON(config.DB_ERROR, gin.H{
-				"message": config.DB_STRING,
+			c.JSON(vars.STATUS_DB_ERROR_CODE, gin.H{
+				"message": vars.STATUS_DB_ERROR_STRING,
 			})
 			c.Abort()
 			return
 		}
 
 		if user.locked.Valid && user.locked.Bool {
-			c.JSON(config.AUTH_ERROR, gin.H{
-				"message": config.AUTH_STRING,
+			c.JSON(vars.STATUS_AUTH_ERROR_CODE, gin.H{
+				"message": vars.STATUS_AUTH_ERROR_STRING,
 			})
 			c.Abort()
 			return
@@ -50,8 +50,8 @@ func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 			c.Set("aid", user.aid.Int64)
 		} else {
 			log.Error(err.Error())
-			c.JSON(config.NOTFOUND_ERROR, gin.H{
-				"message": config.NOTFOUND_STRING,
+			c.JSON(vars.STATUS_NOTFOUND_ERROR_CODE, gin.H{
+				"message": vars.STATUS_NOTFOUND_ERROR_STRING,
 			})
 			c.Abort()
 			return

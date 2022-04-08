@@ -5,7 +5,7 @@ FROM alpine:3.15
 
 # default values 8080 and 8081, if you add --build-arg it will be overwritten
 ARG api_port=8080
-ARG prom_port=8081
+ARG prom_port=7081
 
 WORKDIR /app
 
@@ -21,6 +21,8 @@ ADD keys ./keys
 ADD templates ./templates
 # upload migrations for database
 ADD migrations ./migrations
+# upload assets directory with all images
+ADD assets ./assets
 
 # copy the service
 COPY main .

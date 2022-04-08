@@ -3,10 +3,10 @@ package main
 import (
 	"go-api-starter-kit/routes"
 	"go-api-starter-kit/utils/audit"
-	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/db"
 	"go-api-starter-kit/utils/logger"
 	"go-api-starter-kit/utils/router"
+	"go-api-starter-kit/utils/vars"
 	"log"
 	"net/http"
 
@@ -48,7 +48,7 @@ func main() {
 
 	routes.AddRoutes(r, d, l, a)
 
-	apiPort, prometheusPort := config.SetPorts()
+	apiPort, prometheusPort := vars.SetPorts()
 	go func() { l.Panic(http.ListenAndServe(":"+prometheusPort, promhttp.Handler()).Error()) }()
 	r.Run(":" + apiPort)
 }

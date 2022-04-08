@@ -3,8 +3,8 @@ package example
 import (
 	"context"
 	"database/sql"
-	"go-api-starter-kit/utils/config"
 	"go-api-starter-kit/utils/logger"
+	"go-api-starter-kit/utils/vars"
 	"time"
 )
 
@@ -37,20 +37,20 @@ func (m *model) list(aid int) ([]Example, error) {
 	exampleListQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples ORDER BY id DESC;")
 	if err != nil {
 		m.log.Error(err.Error())
-		return examples, config.NewDBError(err)
+		return examples, vars.StatusDBError(err)
 	}
 
 	exampleListQueryExec, err := exampleListQuery.Query()
 	if err != nil {
 		m.log.Error(err.Error())
-		return examples, config.NewDBError(err)
+		return examples, vars.StatusDBError(err)
 	}
 	defer exampleListQueryExec.Close()
 
 	for exampleListQueryExec.Next() {
 		err = exampleListQueryExec.Scan(&example.ID, &example.Name, &example.Updatedat, &example.Createdat)
 		if err != nil {
-			return examples, config.NewDBError(err)
+			return examples, vars.StatusDBError(err)
 		}
 
 		examples = append(examples, example)
@@ -63,26 +63,26 @@ func (m *model) create(c context.Context, model ExampleInput, aid int) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewServerError(err)
+		return vars.StatusServerError(err)
 	}
 
 	exampleInsertQuery, err := m.db.PrepareContext(c, "INSERT INTO examples (name, updated_at, created_at) VALUES (?,?,?);")
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	_, err = exampleInsertQuery.ExecContext(c, model.Name, time.Now(), time.Now())
 	if err != nil {
 		tx.Rollback()
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewServerError(err)
+		return vars.StatusServerError(err)
 	}
 
 	return nil
@@ -94,17 +94,17 @@ func (m *model) show(id int64, aid int) (Example, error) {
 	exampleShowQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples WHERE id=?;")
 	if err != nil {
 		m.log.Error(err.Error())
-		return example, config.NewDBError(err)
+		return example, vars.StatusDBError(err)
 	}
 
 	err = exampleShowQuery.QueryRow(id).Scan(&example.ID, &example.Name, &example.Updatedat, &example.Createdat)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			m.log.Error(err.Error())
-			return example, config.NewNotfoundError(err)
+			return example, vars.StatusNotfoundError(err)
 		}
 		m.log.Error(err.Error())
-		return example, config.NewDBError(err)
+		return example, vars.StatusDBError(err)
 	}
 
 	return example, nil
@@ -114,13 +114,13 @@ func (m *model) update(c context.Context, id int64, model ExampleInput, aid int)
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewServerError(err)
+		return vars.StatusServerError(err)
 	}
 
 	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=?;")
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	var example Example
@@ -128,28 +128,28 @@ func (m *model) update(c context.Context, id int64, model ExampleInput, aid int)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			m.log.Error(err.Error())
-			return config.NewNotfoundError(err)
+			return vars.StatusNotfoundError(err)
 		}
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	exampleUpdateQuery, err := tx.PrepareContext(c, "UPDATE examples SET name=?, updated_at=? WHERE id=?;")
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	_, err = exampleUpdateQuery.ExecContext(c, model.Name, time.Now(), example.ID)
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewServerError(err)
+		return vars.StatusServerError(err)
 	}
 
 	return nil
@@ -159,13 +159,13 @@ func (m *model) delete(c context.Context, id int64, aid int) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewServerError(err)
+		return vars.StatusServerError(err)
 	}
 
 	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=?;")
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	var example Example
@@ -173,28 +173,28 @@ func (m *model) delete(c context.Context, id int64, aid int) error {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			m.log.Error(err.Error())
-			return config.NewNotfoundError(err)
+			return vars.StatusNotfoundError(err)
 		}
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	exampleDeleteQuery, err := tx.PrepareContext(c, "DELETE FROM examples WHERE id=?;")
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	_, err = exampleDeleteQuery.ExecContext(c, example.ID)
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewDBError(err)
+		return vars.StatusDBError(err)
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		m.log.Error(err.Error())
-		return config.NewServerError(err)
+		return vars.StatusServerError(err)
 	}
 
 	return nil
