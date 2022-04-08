@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http/httptest"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -47,6 +48,16 @@ func setupServer() *gin.Engine {
 	return env.Router
 }
 
+const (
+	updatedString = ",\"createdat\":\\s?\"(20.*?)\""
+	createdString = ",\"updatedat\":\\s?\"(20.*?)\""
+)
+
+var (
+	updatedRegex = regexp.MustCompile(updatedString)
+	createdRegex = regexp.MustCompile(createdString)
+)
+
 func TestHealth(t *testing.T) {
 	testServer := httptest.NewServer(setupServer())
 	defer testServer.Close()
@@ -62,8 +73,8 @@ func TestHealth(t *testing.T) {
 		status               int
 		expected             string
 	}{
-		{name: "Examples - Get - authorized - admin role - list", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":1,"name":"test","updatedat":"2022-04-08T12:00:00Z","createdat":"2022-04-08T12:00:00Z"}]`},
-		{name: "Examples - Get - authorized - admin role - list", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/1", status: 200, expected: `{"id":1,"name":"test","updatedat":"2022-04-08T12:00:00Z","createdat":"2022-04-08T12:00:00Z"}`},
+		{name: "Examples - Get - authorized - admin role - list", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":2,"name":"test2"},{"id":1,"name":"test"}]`},
+		{name: "Examples - Get - authorized - admin role - list", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/1", status: 200, expected: `{"id":1,"name":"test"}`},
 	}
 
 	for _, st := range tests {
@@ -75,7 +86,11 @@ func TestHealth(t *testing.T) {
 		resp := test.GetResponse(testServer.URL, st.endpoint, st.method, st.body, st.authorizationEnabled, authorization)
 		body, _ := ioutil.ReadAll(resp.Body)
 
+		bodyStr := string(body)
+		bodyStr = updatedRegex.ReplaceAllString(bodyStr, "")
+		bodyStr = createdRegex.ReplaceAllString(bodyStr, "")
+
 		assert.Equal(t, st.status, resp.StatusCode, st.name)
-		assert.Equal(t, st.expected, string(body), st.name)
+		assert.Equal(t, st.expected, bodyStr, st.name)
 	}
 }
