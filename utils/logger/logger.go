@@ -27,5 +27,5 @@ func (l *logger) Panic(msg string) {
 	l.zap.Panic(msg)
 }
 func (l *logger) Error(msg string) {
-	l.zap.Panic(msg)
+	l.zap.Error(msg)
 }

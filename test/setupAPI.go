@@ -42,7 +42,7 @@ func NewTestAPI() (*TestAPI, error) {
 	//	return nil, err
 	//}
 
-	r, err := router.New("../../assets")
+	r, err := router.New()
 	if err != nil {
 		return nil, err
 	}

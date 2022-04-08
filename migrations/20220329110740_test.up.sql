@@ -1,3 +1,0 @@
-CREATE TABLE IF NOT EXISTS examples (
-  name VARCHAR(16)
-);

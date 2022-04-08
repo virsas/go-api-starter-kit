@@ -15,7 +15,7 @@ func Routes(r *gin.Engine, apiPath string, db *sql.DB, log logger.LoggerHandler)
 		ctrl.show,
 	)
 	r.GET(
-		apiPath+"/status",
+		apiPath+"/v1"+"/status",
 		ctrl.show,
 	)
 }

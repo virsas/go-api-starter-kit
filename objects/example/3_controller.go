@@ -3,6 +3,7 @@ package example
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"go-api-starter-kit/utils/logger"
 	"go-api-starter-kit/utils/vars"
 	"strconv"
@@ -25,7 +26,9 @@ func (ctrl *controller) list(c *gin.Context) {
 	var err error
 	var examples []Example = []Example{}
 
-	aid, ok := c.MustGet("aid").(int)
+	aid, ok := c.MustGet("aid").(int64)
+	fmt.Println(ok)
+	fmt.Println(aid)
 	if ok {
 		examples, err = ctrl.m.list(aid)
 		if err != nil {
@@ -57,7 +60,7 @@ func (ctrl *controller) create(c *gin.Context) {
 		return
 	}
 
-	aid, ok := c.MustGet("aid").(int)
+	aid, ok := c.MustGet("aid").(int64)
 	if ok {
 		err = ctrl.m.create(c, example, aid)
 		if err != nil {
@@ -91,7 +94,7 @@ func (ctrl *controller) show(c *gin.Context) {
 		return
 	}
 
-	aid, ok := c.MustGet("aid").(int)
+	aid, ok := c.MustGet("aid").(int64)
 	if ok {
 		example, err = ctrl.m.show(id, aid)
 		if err != nil {
@@ -132,7 +135,7 @@ func (ctrl *controller) update(c *gin.Context) {
 		return
 	}
 
-	aid, ok := c.MustGet("aid").(int)
+	aid, ok := c.MustGet("aid").(int64)
 	if ok {
 		err = ctrl.m.update(c, id, example, aid)
 		if err != nil {
@@ -163,7 +166,7 @@ func (ctrl *controller) delete(c *gin.Context) {
 		return
 	}
 
-	aid, ok := c.MustGet("aid").(int)
+	aid, ok := c.MustGet("aid").(int64)
 	if ok {
 		err = ctrl.m.delete(c, id, aid)
 		if err != nil {

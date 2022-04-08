@@ -30,7 +30,7 @@ type Example struct {
 	Createdat *time.Time `json:"createdat"`
 }
 
-func (m *model) list(aid int) ([]Example, error) {
+func (m *model) list(aid int64) ([]Example, error) {
 	var example Example
 	var examples []Example = []Example{}
 
@@ -59,14 +59,14 @@ func (m *model) list(aid int) ([]Example, error) {
 	return examples, nil
 }
 
-func (m *model) create(c context.Context, model ExampleInput, aid int) error {
+func (m *model) create(c context.Context, model ExampleInput, aid int64) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusServerError(err)
 	}
 
-	exampleInsertQuery, err := m.db.PrepareContext(c, "INSERT INTO examples (name, updated_at, created_at) VALUES (?,?,?);")
+	exampleInsertQuery, err := m.db.PrepareContext(c, "INSERT INTO examples (name, updated_at, created_at) VALUES ($1,$2,$3);")
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusDBError(err)
@@ -88,10 +88,10 @@ func (m *model) create(c context.Context, model ExampleInput, aid int) error {
 	return nil
 }
 
-func (m *model) show(id int64, aid int) (Example, error) {
+func (m *model) show(id int64, aid int64) (Example, error) {
 	var example Example
 
-	exampleShowQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples WHERE id=?;")
+	exampleShowQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples WHERE id=$1;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return example, vars.StatusDBError(err)
@@ -110,14 +110,14 @@ func (m *model) show(id int64, aid int) (Example, error) {
 	return example, nil
 }
 
-func (m *model) update(c context.Context, id int64, model ExampleInput, aid int) error {
+func (m *model) update(c context.Context, id int64, model ExampleInput, aid int64) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusServerError(err)
 	}
 
-	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=?;")
+	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=$1;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusDBError(err)
@@ -134,7 +134,7 @@ func (m *model) update(c context.Context, id int64, model ExampleInput, aid int)
 		return vars.StatusDBError(err)
 	}
 
-	exampleUpdateQuery, err := tx.PrepareContext(c, "UPDATE examples SET name=?, updated_at=? WHERE id=?;")
+	exampleUpdateQuery, err := tx.PrepareContext(c, "UPDATE examples SET name=$1, updated_at=$! WHERE id=$1;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusDBError(err)
@@ -155,14 +155,14 @@ func (m *model) update(c context.Context, id int64, model ExampleInput, aid int)
 	return nil
 }
 
-func (m *model) delete(c context.Context, id int64, aid int) error {
+func (m *model) delete(c context.Context, id int64, aid int64) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusServerError(err)
 	}
 
-	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=?;")
+	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=$1;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusDBError(err)
@@ -179,7 +179,7 @@ func (m *model) delete(c context.Context, id int64, aid int) error {
 		return vars.StatusDBError(err)
 	}
 
-	exampleDeleteQuery, err := tx.PrepareContext(c, "DELETE FROM examples WHERE id=?;")
+	exampleDeleteQuery, err := tx.PrepareContext(c, "DELETE FROM examples WHERE id=$1;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusDBError(err)

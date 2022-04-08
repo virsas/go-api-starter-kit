@@ -7,11 +7,10 @@ import (
 
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/thinkerou/favicon"
 	"go.uber.org/zap"
 )
 
-func New(assetsPath string) (*gin.Engine, error) {
+func New() (*gin.Engine, error) {
 	logger, _ := zap.NewProduction()
 
 	var debugLogging bool = false
@@ -35,6 +34,5 @@ func New(assetsPath string) (*gin.Engine, error) {
 	r.Use(getCors())
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logger, true))
-	r.Use(favicon.New(assetsPath + "/favicon.ico"))
 	return r, nil
 }

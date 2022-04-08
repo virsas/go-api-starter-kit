@@ -41,9 +41,9 @@ func New() (*sql.DB, error) {
 	}
 
 	// Postgres setup
-	db, err := initPostgres(dbUser, dbPass, dbHost, dbPort, dbName)
+	db, err := InitPostgres(dbUser, dbPass, dbHost, dbPort, dbName)
 	// Mysql setup
-	//db, err := initPostgres(dbUser, dbPass, dbHost, dbPort, dbName)
+	//db, err := InitMysql(dbUser, dbPass, dbHost, dbPort, dbName)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func New() (*sql.DB, error) {
 	return db, nil
 }
 
-func initPostgres(dbUser string, dbPass string, dbHost string, dbPort string, dbName string) (*sql.DB, error) {
+func InitPostgres(dbUser string, dbPass string, dbHost string, dbPort string, dbName string) (*sql.DB, error) {
 	var err error
 	var db *sql.DB
 
@@ -89,7 +89,7 @@ func initPostgres(dbUser string, dbPass string, dbHost string, dbPort string, db
 	return db, nil
 }
 
-func initMysql(dbUser string, dbPass string, dbHost string, dbPort string, dbName string) (*sql.DB, error) {
+func InitMysql(dbUser string, dbPass string, dbHost string, dbPort string, dbName string) (*sql.DB, error) {
 	var err error
 	var db *sql.DB
 

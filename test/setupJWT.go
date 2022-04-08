@@ -9,8 +9,8 @@ import (
 
 // Claims struct
 type Claims struct {
-	UserEmail string   `json:"https://kephala.com/email"`
-	Roles     []string `json:"https://kephala.com/roles"`
+	UserEmail string   `json:"email"`
+	Roles     []string `json:"roles"`
 	jwt.StandardClaims
 }
 

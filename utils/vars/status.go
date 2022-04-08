@@ -23,6 +23,9 @@ const STATUS_VALIDATION_ERROR_STRING = "validationError"
 const STATUS_AUTH_ERROR_CODE = http.StatusForbidden
 const STATUS_AUTH_ERROR_STRING = "notAllowed"
 
+const STATUS_AUTH_LOCKED_ERROR_CODE = http.StatusForbidden
+const STATUS_AUTH_LOCKED_ERROR_STRING = "userLocked"
+
 type StatusErr struct {
 	statusCode int
 	statusMsg  string

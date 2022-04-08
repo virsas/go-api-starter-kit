@@ -12,29 +12,29 @@ func Routes(r *gin.Engine, apiPath string, db *sql.DB, log logger.LoggerHandler)
 	ctrl := newController(db, log)
 
 	r.GET(
-		apiPath+"/examples/",
+		apiPath+"/v1"+"/examples/",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		ctrl.list,
 	)
 	r.POST(
-		apiPath+"/examples/",
+		apiPath+"/v1"+"/examples/",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		validateExample(log),
 		ctrl.create,
 	)
 	r.GET(
-		apiPath+"/examples/:ID",
+		apiPath+"/v1"+"/examples/:ID",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		ctrl.show,
 	)
 	r.PATCH(
-		apiPath+"/examples/:ID",
+		apiPath+"/v1"+"/examples/:ID",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		validateExample(log),
 		ctrl.update,
 	)
 	r.DELETE(
-		apiPath+"/examples/:ID",
+		apiPath+"/v1"+"/examples/:ID",
 		middlewares.AllowRoles(log, []string{"admin"}),
 		ctrl.delete,
 	)

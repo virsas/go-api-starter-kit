@@ -2,7 +2,6 @@ package health
 
 import (
 	"context"
-	"go-api-starter-kit/middlewares"
 	"go-api-starter-kit/test"
 	"io/ioutil"
 	"net/http/httptest"
@@ -41,7 +40,7 @@ func setupServer() *gin.Engine {
 	if err != nil {
 		panic(err)
 	}
-	env.Router.Use(middlewares.Auth("../../keys", "test", env.Logger))
+
 	Routes(env.Router, "", env.DB, env.Logger)
 
 	return env.Router
@@ -62,9 +61,9 @@ func TestHealth(t *testing.T) {
 		status               int
 		expected             string
 	}{
-		{name: "Checking /health", method: "GET", authorizationEnabled: true, email: "stefan@kephala.com", role: []string{"admin"}, body: "", endpoint: "/health", status: 200, expected: `{"database":"OK","server":"OK"}`},
-		{name: "Checking /status", method: "GET", authorizationEnabled: true, email: "stefan@kephala.com", role: []string{"admin"}, body: "", endpoint: "/status", status: 200, expected: `{"database":"OK","server":"OK"}`},
-		{name: "Checking /aaaa", method: "GET", authorizationEnabled: true, email: "stefan@kephala.com", role: []string{"admin"}, body: "", endpoint: "/aaaa", status: 404, expected: `404 page not found`},
+		{name: "Checking /health", method: "GET", authorizationEnabled: false, email: "", role: []string{}, body: "", endpoint: "/health", status: 200, expected: `{"database":"OK","server":"OK"}`},
+		{name: "Checking /v1/status", method: "GET", authorizationEnabled: false, email: "", role: []string{}, body: "", endpoint: "/v1/status", status: 200, expected: `{"database":"OK","server":"OK"}`},
+		{name: "Checking /aaaa", method: "GET", authorizationEnabled: false, email: "", role: []string{}, body: "", endpoint: "/aaaa", status: 404, expected: `404 page not found`},
 	}
 
 	for _, st := range tests {
@@ -76,7 +75,7 @@ func TestHealth(t *testing.T) {
 		resp := test.GetResponse(testServer.URL, st.endpoint, st.method, st.body, st.authorizationEnabled, authorization)
 		body, _ := ioutil.ReadAll(resp.Body)
 
-		assert.Equal(t, st.status, resp.StatusCode, "Failed to read endpoint "+st.endpoint)
-		assert.Equal(t, st.expected, string(body), "Not expected body on endpoint "+st.endpoint)
+		assert.Equal(t, st.status, resp.StatusCode, st.email)
+		assert.Equal(t, st.expected, string(body), st.email)
 	}
 }

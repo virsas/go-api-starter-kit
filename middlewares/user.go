@@ -18,9 +18,9 @@ func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 		var err error
 		var user usermodel
 
-		uid := c.MustGet("uid")
+		email := c.MustGet("email")
 
-		err = db.QueryRow("SELECT account_id, locked FROM users WHERE id=?;", uid).Scan(&user.aid, &user.locked)
+		err = db.QueryRow("SELECT account_id, locked FROM users WHERE email=$1;", email).Scan(&user.aid, &user.locked)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				log.Error(err.Error())
@@ -39,8 +39,8 @@ func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 		}
 
 		if user.locked.Valid && user.locked.Bool {
-			c.JSON(vars.STATUS_AUTH_ERROR_CODE, gin.H{
-				"message": vars.STATUS_AUTH_ERROR_STRING,
+			c.JSON(vars.STATUS_AUTH_LOCKED_ERROR_CODE, gin.H{
+				"message": vars.STATUS_AUTH_LOCKED_ERROR_STRING,
 			})
 			c.Abort()
 			return

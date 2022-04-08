@@ -16,6 +16,7 @@ func Auth(keysPath string, keyPrefix string, log logger.LoggerHandler) gin.Handl
 	return func(c *gin.Context) {
 		token, err := getAuthToken(c, log)
 		if err != nil {
+			log.Error("No token error")
 			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
 				"message": err.(*vars.StatusErr).Error(),
 			})
@@ -25,6 +26,7 @@ func Auth(keysPath string, keyPrefix string, log logger.LoggerHandler) gin.Handl
 		var parsedToken *jwt.Token
 		pem, err := getPem(log, keysPath, keyPrefix)
 		if err != nil {
+			log.Error("No token error")
 			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
 				"message": err.(*vars.StatusErr).Error(),
 			})
@@ -43,6 +45,7 @@ func Auth(keysPath string, keyPrefix string, log logger.LoggerHandler) gin.Handl
 
 		err = getClaims(c, parsedToken, log)
 		if err != nil {
+			log.Error("No token error")
 			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
 				"message": err.(*vars.StatusErr).Error(),
 			})
@@ -58,7 +61,8 @@ func getClaims(c *gin.Context, token *jwt.Token, log logger.LoggerHandler) error
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if ok {
-		c.Set("uid", claims["uid"])
+		c.Set("email", claims["email"])
+		c.Set("roles", claims["roles"])
 	} else {
 		return vars.StatusServerError(errors.New("getClaimsError"))
 	}

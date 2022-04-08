@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/thinkerou/favicon"
 )
 
 func AddRoutes(r *gin.Engine, d *sql.DB, l logger.LoggerHandler, a audit.AuditHandler) {
@@ -20,6 +21,7 @@ func AddRoutes(r *gin.Engine, d *sql.DB, l logger.LoggerHandler, a audit.AuditHa
 	}
 
 	// order is important
+	r.Use(favicon.New("assets/favicon.ico"))
 	health.Routes(r, apiPath, d, l)
 
 	// all routes should be below authentication, only health route is available without authentication

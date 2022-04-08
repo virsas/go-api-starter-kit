@@ -8,29 +8,43 @@
 - Gin router with zap logs and cors security
 - Accessed allowed based on user roles
 - Things the API can do is object based
+- Unit test in each object with Testify
 
 ## Database
 
-The starter kit is configured with postgres DB, but migration to mysql should not be a problem. Just modify the utils/db/sql.go and test containers
+The starter kit is configured with postgres DB, but application is ready to use Mysql instead. See following files, comment out postgres functions and uncomment mysql ones.
 
-replace this
+- main.go
+- utils/db/sql.go
+- test/setupAPI.go
+- objects/*/5_test.go
 
-``` go
-# utils/sql.go
-db, err = vssdb.InitMysqlDB(dbAccountUser, dbAccountPass, dbAccountHost, dbAccountPort, dbAccountName)
-# .env
-DB_MAX_OPEN_CONNECTIONS=50
-DB_MAX_IDLE_CONNECTIONS=50
+example of a change
+
+This:
+
+``` golang
+  // Postgres setup
+  if err := db.PostgresMigrate(d, "file://migrations"); err != nil { 
+    l.Panic(err.Error())
+  }
+  // Mysql setup
+  //if err := db.PostgresMigrate(d, "file://migrations"); err != nil {
+  //  l.Panic(err.Error())
+  //}
 ```
 
-with
+to this:
 
-``` go
-# utils/sql.go
-db, err = vssdb.InitPostgresDB(dbAccountUser, dbAccountPass, dbAccountHost, dbAccountPort, dbAccountName)
-# .env
-VSS_DB_PSQL_MAX_OPEN_CONNECTIONS=50
-VSS_DB_PSQL_MAX_IDLE_CONNECTIONS=50
+``` golang
+  // Postgres setup
+  //if err := db.PostgresMigrate(d, "file://migrations"); err != nil {
+  //  l.Panic(err.Error())
+  //}
+  // Mysql setup
+  if err := db.PostgresMigrate(d, "file://migrations"); err != nil {
+    l.Panic(err.Error())
+  }
 ```
 
 ## Migration
@@ -44,6 +58,8 @@ Installation
 ``` bash
 # for mysql
 go install -tags 'mysql' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+# for postgres
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 ```
 
 Migration creation:
@@ -54,7 +70,7 @@ migrate create -ext sql -dir migrations test
 
 ### Migrate
 
-Migration is run on API start up and runs all migrations from ./migrations directory
+Migration is run on API start up and runs all migrations from ./migrations directory ans skipping those that already run.
 
 ## Audit trail
 
@@ -62,7 +78,7 @@ At this moment the starter kit works with Cloudwatch log groups, in the future I
 
 ## Claims
 
-Configuration in middlewares. At this moment i am getting just User ID from the JWT, you might need to modify that to add extra fileds. See moddlewares/auth.go
+Configuration in middlewares. At this moment i am getting just User ID from the JWT, you might need to modify that to add extra fileds. See middlewares/auth.go
 
 ``` go
 func getClaims(c *gin.Context, token *jwt.Token, log *zap.Logger) error {
@@ -77,9 +93,9 @@ func getClaims(c *gin.Context, token *jwt.Token, log *zap.Logger) error {
 }
 ```
 
-## Errors
+## Respond statuses
 
-see helpers/errors for more details. At this moment, those errors are returned in message string.
+see utils/vars/status for more details. At this moment, those errors are returned in message string.
 
 - STATUS_OK_STRING = "OK"
 - STATUS_DB_ERROR_STRING = "dbError"
@@ -93,7 +109,7 @@ see helpers/errors for more details. At this moment, those errors are returned i
 
 I provided an object called example with CRUD actions to create, update, delete, show and list the objects. This example can be copied and renamed to anything. Users, Accounts. See examples' object for more details.
 
-Each object has own routes, validation and methods and then connected to the API.
+Each object has own routes, validation, tests and methods and then connected to the API.
 
 ## Testing with CURL
 
@@ -123,5 +139,5 @@ curl -X DELETE http://localhost:8080/api/v1/examples/6
 ## Testing
 
 ``` bash
-go-api-starter-kit
+go test $(go list ./... | grep objects)
 ```

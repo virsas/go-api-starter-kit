@@ -47,7 +47,7 @@ func main() {
 		l.Panic(err.Error())
 	}
 
-	r, err := router.New("./assets")
+	r, err := router.New()
 	if err != nil {
 		l.Panic(err.Error())
 	}
