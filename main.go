@@ -32,9 +32,15 @@ func main() {
 	if err != nil {
 		l.Panic(err.Error())
 	}
-	if err := db.Migrate(d, "file://migrations"); err != nil {
+
+	// Postgres setup
+	if err := db.PostgresMigrate(d, "file://migrations"); err != nil {
 		l.Panic(err.Error())
 	}
+	// Mysql setup
+	//if err := db.PostgresMigrate(d, "file://migrations"); err != nil {
+	//	l.Panic(err.Error())
+	//}
 
 	a, err := audit.New()
 	if err != nil {

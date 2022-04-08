@@ -8,14 +8,31 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-var dbImage string = "mysql:5.7"
 var dbName string = "test"
-var dbUser string = "root"
+var dbUser string = "test"
 var dbPass string = "test"
-var dbHost string = "127.0.0.1"
-var dbPort string = "3306/tcp"
+var dbPort string = "5432/tcp"
 
-func NewTestDB(ctx context.Context) (testcontainers.Container, error) {
+func StartPostgresTestDB(ctx context.Context) (testcontainers.Container, error) {
+	dbC, err := startPostgresContainer(ctx)
+	if err != nil {
+		return nil, err
+	}
+	port, err := getContainerPort(ctx, dbC)
+	if err != nil {
+		return nil, err
+	}
+	host, err := getContainerHost(ctx, dbC)
+	if err != nil {
+		return nil, err
+	}
+
+	TestSetupDBEnv(port, dbName, dbUser, dbPass, host)
+
+	return dbC, nil
+}
+
+func StartMysqlTestDB(ctx context.Context) (testcontainers.Container, error) {
 	dbC, err := startMysqlContainer(ctx)
 	if err != nil {
 		return nil, err
@@ -24,12 +41,37 @@ func NewTestDB(ctx context.Context) (testcontainers.Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbHost, err = getContainerHost(ctx, dbC)
+	host, err := getContainerHost(ctx, dbC)
 	if err != nil {
 		return nil, err
 	}
 
-	TestSetupDBEnv(port, dbName, dbUser, dbPass, dbHost)
+	TestSetupDBEnv(port, dbName, dbUser, dbPass, host)
+
+	return dbC, nil
+}
+
+func startPostgresContainer(ctx context.Context) (testcontainers.Container, error) {
+	var err error
+
+	req := testcontainers.ContainerRequest{
+		Image: "postgres:12.10-alpine",
+		Env: map[string]string{
+			"POSTGRES_DB":       dbName,
+			"POSTGRES_USER":     dbUser,
+			"POSTGRES_PASSWORD": dbPass,
+		},
+		ExposedPorts: []string{dbPort},
+		WaitingFor:   wait.ForListeningPort(nat.Port(dbPort)),
+	}
+
+	dbC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	return dbC, nil
 }
@@ -38,7 +80,7 @@ func startMysqlContainer(ctx context.Context) (testcontainers.Container, error) 
 	var err error
 
 	req := testcontainers.ContainerRequest{
-		Image: dbImage,
+		Image: "mysql:5.7",
 		Env: map[string]string{
 			"MYSQL_ROOT_PASSWORD": dbPass,
 			"MYSQL_DATABASE":      dbName,

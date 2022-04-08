@@ -11,7 +11,7 @@
 
 ## Database
 
-The starter kit is configured with mysql DB, but migration to postgres should not be a problem. Just modify the utils/sql.go and env files
+The starter kit is configured with postgres DB, but migration to mysql should not be a problem. Just modify the utils/db/sql.go and test containers
 
 replace this
 
@@ -19,8 +19,8 @@ replace this
 # utils/sql.go
 db, err = vssdb.InitMysqlDB(dbAccountUser, dbAccountPass, dbAccountHost, dbAccountPort, dbAccountName)
 # .env
-VSS_DB_MYSQL_MAX_OPEN_CONNECTIONS=50
-VSS_DB_MYSQL_MAX_IDLE_CONNECTIONS=50
+DB_MAX_OPEN_CONNECTIONS=50
+DB_MAX_IDLE_CONNECTIONS=50
 ```
 
 with

@@ -31,10 +31,16 @@ func NewTestAPI() (*TestAPI, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := db.Migrate(d, "file://../../migrations"); err != nil {
+	env.DB = d
+
+	// Postgres setup
+	if err := db.PostgresMigrate(d, "file://../../migrations"); err != nil {
 		return nil, err
 	}
-	env.DB = d
+	// Mysql setup
+	//if err := db.PostgresMigrate(d, "file://../../migrations"); err != nil {
+	//	return nil, err
+	//}
 
 	r, err := router.New("../../assets")
 	if err != nil {

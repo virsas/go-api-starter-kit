@@ -17,13 +17,19 @@ func TestMain(m *testing.M) {
 	_, ciPresent := os.LookupEnv("CI")
 	if !ciPresent {
 		ctx := context.Background()
-		pgc, err := test.NewTestDB(ctx)
+		// Postgres setup
+		dbC, err := test.StartPostgresTestDB(ctx)
+		// Mysql setup
+		//dbC, err := test.StartMysqlTestDB(ctx)
 		if err != nil {
 			panic(err)
 		}
-		defer pgc.Terminate(ctx)
+		defer dbC.Terminate(ctx)
 	} else {
-		test.TestSetupDBEnv("3306", "test", "root", "test", "mysql")
+		// Postgres setup
+		test.TestSetupDBEnv("5432", "test", "test", "test", "postgres")
+		// Mysql setup
+		//test.TestSetupDBEnv("5432", "test", "root", "test", "mysql")
 	}
 
 	exitVal := m.Run()
