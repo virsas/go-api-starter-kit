@@ -16,4 +16,4 @@
 
 .env
 main
-keys/*key*
+keys/prod*key*

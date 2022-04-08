@@ -23,7 +23,7 @@ func AddRoutes(r *gin.Engine, d *sql.DB, l logger.LoggerHandler, a audit.AuditHa
 	health.Routes(r, apiPath, d, l)
 
 	// all routes should be below authentication, only health route is available without authentication
-	r.Use(middlewares.Auth(true, l))
+	r.Use(middlewares.Auth("./keys", "prod", l))
 	r.Use(middlewares.User(d, l))
 	r.Use(middlewares.Log(a, l))
 

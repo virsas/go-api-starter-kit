@@ -6,14 +6,13 @@ import (
 	"go-api-starter-kit/utils/logger"
 	"go-api-starter-kit/utils/vars"
 	"io/ioutil"
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
-func Auth(validateJWT bool, log logger.LoggerHandler) gin.HandlerFunc {
+func Auth(keysPath string, keyPrefix string, log logger.LoggerHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := getAuthToken(c, log)
 		if err != nil {
@@ -24,7 +23,7 @@ func Auth(validateJWT bool, log logger.LoggerHandler) gin.HandlerFunc {
 		}
 
 		var parsedToken *jwt.Token
-		pem, err := getPem(log)
+		pem, err := getPem(log, keysPath, keyPrefix)
 		if err != nil {
 			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
 				"message": err.(*vars.StatusErr).Error(),
@@ -82,9 +81,8 @@ func getAuthToken(c *gin.Context, log logger.LoggerHandler) (string, error) {
 	return token, nil
 }
 
-func getPem(log logger.LoggerHandler) (*rsa.PublicKey, error) {
-	currentDir, _ := os.Getwd()
-	var pubKeyPath = currentDir + "/keys/jwtRS256.key.pub"
+func getPem(log logger.LoggerHandler, keysPath string, keyPrefix string) (*rsa.PublicKey, error) {
+	var pubKeyPath = keysPath + "/" + keyPrefix + "_jwtRS256.key.pub"
 
 	verifyBytes, err := ioutil.ReadFile(pubKeyPath)
 	if err != nil {
