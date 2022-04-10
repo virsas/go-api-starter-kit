@@ -14,6 +14,9 @@ const STATUS_SERVER_ERROR_STRING = "apiError"
 const STATUS_NOTFOUND_ERROR_CODE = http.StatusNotFound
 const STATUS_NOTFOUND_ERROR_STRING = "notFound"
 
+const STATUS_NOTFOUND_USER_ERROR_CODE = http.StatusForbidden
+const STATUS_NOTFOUND_USER_ERROR_STRING = "noUserFound"
+
 const STATUS_REQUEST_ERROR_CODE = http.StatusBadRequest
 const STATUS_REQUEST_ERROR_STRING = "requestError"
 
@@ -50,6 +53,9 @@ func StatusServerError(err error) error {
 }
 func StatusNotfoundError(err error) error {
 	return &StatusErr{STATUS_NOTFOUND_ERROR_CODE, STATUS_NOTFOUND_ERROR_STRING, err}
+}
+func StatusNotfoundUserError(err error) error {
+	return &StatusErr{STATUS_NOTFOUND_USER_ERROR_CODE, STATUS_NOTFOUND_USER_ERROR_STRING, err}
 }
 func StatusRequestError(err error) error {
 	return &StatusErr{STATUS_REQUEST_ERROR_CODE, STATUS_REQUEST_ERROR_STRING, err}

@@ -25,8 +25,8 @@ func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 		if err != nil {
 			if err == sql.ErrNoRows {
 				log.Error(err.Error())
-				c.JSON(vars.STATUS_NOTFOUND_ERROR_CODE, gin.H{
-					"message": vars.STATUS_NOTFOUND_ERROR_STRING,
+				c.JSON(vars.STATUS_NOTFOUND_USER_ERROR_CODE, gin.H{
+					"message": vars.STATUS_NOTFOUND_USER_ERROR_STRING,
 				})
 				c.Abort()
 				return

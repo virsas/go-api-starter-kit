@@ -3,6 +3,7 @@ package example
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"go-api-starter-kit/utils/logger"
 	"go-api-starter-kit/utils/vars"
 	"time"
@@ -19,7 +20,7 @@ func newModel(db *sql.DB, log logger.LoggerHandler) *model {
 
 // ExampleInput struct
 type ExampleInput struct {
-	Name *string `json:"name" validate:"required,min=2,max=255"`
+	Name *string `json:"name" validate:"required,alphanum,min=2,max=255"`
 }
 
 // Example struct
@@ -34,13 +35,13 @@ func (m *model) list(aid int64, uid int64) ([]Example, error) {
 	var example Example
 	var examples []Example = []Example{}
 
-	exampleListQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples ORDER BY id DESC;")
+	exampleListQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples WHERE account_id=$1 ORDER BY id DESC;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return examples, vars.StatusDBError(err)
 	}
 
-	exampleListQueryExec, err := exampleListQuery.Query()
+	exampleListQueryExec, err := exampleListQuery.Query(aid)
 	if err != nil {
 		m.log.Error(err.Error())
 		return examples, vars.StatusDBError(err)
@@ -72,6 +73,7 @@ func (m *model) create(c context.Context, model ExampleInput, aid int64, uid int
 		return vars.StatusDBError(err)
 	}
 
+	fmt.Println(*model.Name)
 	_, err = exampleInsertQuery.ExecContext(c, model.Name, aid, uid, time.Now(), time.Now())
 	if err != nil {
 		tx.Rollback()
@@ -91,13 +93,13 @@ func (m *model) create(c context.Context, model ExampleInput, aid int64, uid int
 func (m *model) show(id int64, aid int64, uid int64) (Example, error) {
 	var example Example
 
-	exampleShowQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples WHERE id=$1;")
+	exampleShowQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples WHERE id=$1 and account_id=$2;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return example, vars.StatusDBError(err)
 	}
 
-	err = exampleShowQuery.QueryRow(id).Scan(&example.ID, &example.Name, &example.Updatedat, &example.Createdat)
+	err = exampleShowQuery.QueryRow(id, aid).Scan(&example.ID, &example.Name, &example.Updatedat, &example.Createdat)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			m.log.Error(err.Error())
@@ -117,14 +119,14 @@ func (m *model) update(c context.Context, id int64, model ExampleInput, aid int6
 		return vars.StatusServerError(err)
 	}
 
-	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=$1;")
+	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=$1 AND account_id=$2;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusDBError(err)
 	}
 
 	var example Example
-	err = exampleGetQuery.QueryRowContext(c, id).Scan(&example.ID)
+	err = exampleGetQuery.QueryRowContext(c, id, aid).Scan(&example.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			m.log.Error(err.Error())
@@ -134,7 +136,7 @@ func (m *model) update(c context.Context, id int64, model ExampleInput, aid int6
 		return vars.StatusDBError(err)
 	}
 
-	exampleUpdateQuery, err := tx.PrepareContext(c, "UPDATE examples SET name=$1, updated_at=$! WHERE id=$1;")
+	exampleUpdateQuery, err := tx.PrepareContext(c, "UPDATE examples SET name=$1, updated_at=$2 WHERE id=$3;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusDBError(err)
@@ -162,14 +164,14 @@ func (m *model) delete(c context.Context, id int64, aid int64, uid int64) error 
 		return vars.StatusServerError(err)
 	}
 
-	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=$1;")
+	exampleGetQuery, err := tx.PrepareContext(c, "SELECT id FROM examples WHERE id=$1 and account_id=$2;")
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusDBError(err)
 	}
 
 	var example Example
-	err = exampleGetQuery.QueryRowContext(c, id).Scan(&example.ID)
+	err = exampleGetQuery.QueryRowContext(c, id, aid).Scan(&example.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			m.log.Error(err.Error())
