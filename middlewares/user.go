@@ -9,6 +9,7 @@ import (
 )
 
 type usermodel struct {
+	uid    sql.NullInt64
 	aid    sql.NullInt64
 	locked sql.NullBool
 }
@@ -20,7 +21,7 @@ func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 
 		email := c.MustGet("email")
 
-		err = db.QueryRow("SELECT account_id, locked FROM users WHERE email=$1;", email).Scan(&user.aid, &user.locked)
+		err = db.QueryRow("SELECT id, account_id, locked FROM users WHERE email=$1;", email).Scan(&user.uid, &user.aid, &user.locked)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				log.Error(err.Error())
@@ -41,6 +42,17 @@ func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 		if user.locked.Valid && user.locked.Bool {
 			c.JSON(vars.STATUS_AUTH_LOCKED_ERROR_CODE, gin.H{
 				"message": vars.STATUS_AUTH_LOCKED_ERROR_STRING,
+			})
+			c.Abort()
+			return
+		}
+
+		if user.uid.Valid {
+			c.Set("uid", user.uid.Int64)
+		} else {
+			log.Error(err.Error())
+			c.JSON(vars.STATUS_NOTFOUND_ERROR_CODE, gin.H{
+				"message": vars.STATUS_NOTFOUND_ERROR_STRING,
 			})
 			c.Abort()
 			return

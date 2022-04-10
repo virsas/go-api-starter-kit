@@ -30,7 +30,7 @@ type Example struct {
 	Createdat *time.Time `json:"createdat"`
 }
 
-func (m *model) list(aid int64) ([]Example, error) {
+func (m *model) list(aid int64, uid int64) ([]Example, error) {
 	var example Example
 	var examples []Example = []Example{}
 
@@ -59,20 +59,20 @@ func (m *model) list(aid int64) ([]Example, error) {
 	return examples, nil
 }
 
-func (m *model) create(c context.Context, model ExampleInput, aid int64) error {
+func (m *model) create(c context.Context, model ExampleInput, aid int64, uid int64) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusServerError(err)
 	}
 
-	exampleInsertQuery, err := m.db.PrepareContext(c, "INSERT INTO examples (name, updated_at, created_at) VALUES ($1,$2,$3);")
+	exampleInsertQuery, err := m.db.PrepareContext(c, "INSERT INTO examples (name, account_id, user_id, updated_at, created_at) VALUES ($1,$2,$3,$4,$5);")
 	if err != nil {
 		m.log.Error(err.Error())
 		return vars.StatusDBError(err)
 	}
 
-	_, err = exampleInsertQuery.ExecContext(c, model.Name, time.Now(), time.Now())
+	_, err = exampleInsertQuery.ExecContext(c, model.Name, aid, uid, time.Now(), time.Now())
 	if err != nil {
 		tx.Rollback()
 		m.log.Error(err.Error())
@@ -88,7 +88,7 @@ func (m *model) create(c context.Context, model ExampleInput, aid int64) error {
 	return nil
 }
 
-func (m *model) show(id int64, aid int64) (Example, error) {
+func (m *model) show(id int64, aid int64, uid int64) (Example, error) {
 	var example Example
 
 	exampleShowQuery, err := m.db.Prepare("SELECT id, name, updated_at, created_at FROM examples WHERE id=$1;")
@@ -110,7 +110,7 @@ func (m *model) show(id int64, aid int64) (Example, error) {
 	return example, nil
 }
 
-func (m *model) update(c context.Context, id int64, model ExampleInput, aid int64) error {
+func (m *model) update(c context.Context, id int64, model ExampleInput, aid int64, uid int64) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error(err.Error())
@@ -155,7 +155,7 @@ func (m *model) update(c context.Context, id int64, model ExampleInput, aid int6
 	return nil
 }
 
-func (m *model) delete(c context.Context, id int64, aid int64) error {
+func (m *model) delete(c context.Context, id int64, aid int64, uid int64) error {
 	tx, err := m.db.BeginTx(c, nil)
 	if err != nil {
 		m.log.Error(err.Error())

@@ -3,7 +3,7 @@ package example
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	"go-api-starter-kit/helpers"
 	"go-api-starter-kit/utils/logger"
 	"go-api-starter-kit/utils/vars"
 	"strconv"
@@ -26,20 +26,25 @@ func (ctrl *controller) list(c *gin.Context) {
 	var err error
 	var examples []Example = []Example{}
 
-	aid, ok := c.MustGet("aid").(int64)
-	fmt.Println(ok)
-	fmt.Println(aid)
-	if ok {
-		examples, err = ctrl.m.list(aid)
-		if err != nil {
-			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-				"message": err.(*vars.StatusErr).Error(),
-			})
-			return
-		}
-	} else {
-		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
-			"message": vars.STATUS_REQUEST_ERROR_STRING,
+	aid, err := helpers.GetID(c.MustGet("aid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+	uid, err := helpers.GetID(c.MustGet("uid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+
+	examples, err = ctrl.m.list(aid, uid)
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
 		})
 		return
 	}
@@ -60,18 +65,25 @@ func (ctrl *controller) create(c *gin.Context) {
 		return
 	}
 
-	aid, ok := c.MustGet("aid").(int64)
-	if ok {
-		err = ctrl.m.create(c, example, aid)
-		if err != nil {
-			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-				"message": err.(*vars.StatusErr).Error(),
-			})
-			return
-		}
-	} else {
-		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
-			"message": vars.STATUS_REQUEST_ERROR_STRING,
+	aid, err := helpers.GetID(c.MustGet("aid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+	uid, err := helpers.GetID(c.MustGet("uid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+
+	err = ctrl.m.create(c, example, aid, uid)
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
 		})
 		return
 	}
@@ -94,18 +106,25 @@ func (ctrl *controller) show(c *gin.Context) {
 		return
 	}
 
-	aid, ok := c.MustGet("aid").(int64)
-	if ok {
-		example, err = ctrl.m.show(id, aid)
-		if err != nil {
-			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-				"message": err.(*vars.StatusErr).Error(),
-			})
-			return
-		}
-	} else {
-		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
-			"message": vars.STATUS_REQUEST_ERROR_STRING,
+	aid, err := helpers.GetID(c.MustGet("aid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+	uid, err := helpers.GetID(c.MustGet("uid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+
+	example, err = ctrl.m.show(id, aid, uid)
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
 		})
 		return
 	}
@@ -135,18 +154,25 @@ func (ctrl *controller) update(c *gin.Context) {
 		return
 	}
 
-	aid, ok := c.MustGet("aid").(int64)
-	if ok {
-		err = ctrl.m.update(c, id, example, aid)
-		if err != nil {
-			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-				"message": err.(*vars.StatusErr).Error(),
-			})
-			return
-		}
-	} else {
-		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
-			"message": vars.STATUS_REQUEST_ERROR_STRING,
+	aid, err := helpers.GetID(c.MustGet("aid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+	uid, err := helpers.GetID(c.MustGet("uid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+
+	err = ctrl.m.update(c, id, example, aid, uid)
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
 		})
 		return
 	}
@@ -166,18 +192,25 @@ func (ctrl *controller) delete(c *gin.Context) {
 		return
 	}
 
-	aid, ok := c.MustGet("aid").(int64)
-	if ok {
-		err = ctrl.m.delete(c, id, aid)
-		if err != nil {
-			c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-				"message": err.(*vars.StatusErr).Error(),
-			})
-			return
-		}
-	} else {
-		c.JSON(vars.STATUS_REQUEST_ERROR_CODE, gin.H{
-			"message": vars.STATUS_REQUEST_ERROR_STRING,
+	aid, err := helpers.GetID(c.MustGet("aid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+	uid, err := helpers.GetID(c.MustGet("uid"))
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
+		})
+		return
+	}
+
+	err = ctrl.m.delete(c, id, aid, uid)
+	if err != nil {
+		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
+			"message": err.(*vars.StatusErr).Error(),
 		})
 		return
 	}
