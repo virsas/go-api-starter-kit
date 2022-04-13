@@ -2,12 +2,12 @@ package example
 
 import (
 	"context"
+	"go-api-starter-kit/helpers"
 	"go-api-starter-kit/middlewares"
 	"go-api-starter-kit/test"
 	"io/ioutil"
 	"net/http/httptest"
 	"os"
-	"regexp"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -48,21 +48,14 @@ func setupServer() *gin.Engine {
 	return env.Router
 }
 
-const (
-	updatedString = ",\"createdat\":\\s?\"(20.*?)\""
-	createdString = ",\"updatedat\":\\s?\"(20.*?)\""
-)
-
-var (
-	updatedRegex = regexp.MustCompile(updatedString)
-	createdRegex = regexp.MustCompile(createdString)
-)
-
 func TestHealth(t *testing.T) {
 	testServer := httptest.NewServer(setupServer())
 	defer testServer.Close()
 
 	tests := []struct {
+		object               string
+		testType             string
+		result               string
 		name                 string
 		method               string
 		authorizationEnabled bool
@@ -73,36 +66,34 @@ func TestHealth(t *testing.T) {
 		status               int
 		expected             string
 	}{
-		// Unauthorized test should fail
-		{name: "Examples - Get - unauthorized - admin role - list", method: "GET", authorizationEnabled: false, email: "", role: []string{""}, body: "", endpoint: "/v1/examples/", status: 500, expected: `{"message":"apiError"}`},
-		{name: "Examples - Get - unauthorized - admin role - show", method: "GET", authorizationEnabled: false, email: "", role: []string{""}, body: "", endpoint: "/v1/examples/1", status: 500, expected: `{"message":"apiError"}`},
-		{name: "Examples - Post - unauthorized - admin role - list", method: "POST", authorizationEnabled: false, email: "", role: []string{""}, body: `{"name":"111"}`, endpoint: "/v1/examples/", status: 500, expected: `{"message":"apiError"}`},
-		{name: "Examples - Patch - unauthorized - admin role - update", method: "PATCH", authorizationEnabled: false, email: "", role: []string{""}, body: `{"name":"222"}`, endpoint: "/v1/examples/3", status: 500, expected: `{"message":"apiError"}`},
-		{name: "Examples - Delete - unauthorized - admin role - delete", method: "DELETE", authorizationEnabled: false, email: "", role: []string{""}, body: "", endpoint: "/v1/examples/3", status: 500, expected: `{"message":"apiError"}`},
-		// Authorized user with proper role
-		{name: "Examples - Get - authorized - admin role - list", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":2,"name":"test2"},{"id":1,"name":"test"}]`},
-		{name: "Examples - Get - authorized - admin role - show", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/1", status: 200, expected: `{"id":1,"name":"test"}`},
-		{name: "Examples - Post - authorized - admin role - list", method: "POST", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"111"}`, endpoint: "/v1/examples/", status: 200, expected: `{"message":"OK"}`},
-		{name: "Examples - Get - authorized - admin role - list again 1", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":3,"name":"111"},{"id":2,"name":"test2"},{"id":1,"name":"test"}]`},
-		{name: "Examples - Patch - authorized - admin role - update", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"222"}`, endpoint: "/v1/examples/3", status: 200, expected: `{"message":"OK"}`},
-		{name: "Examples - Get - authorized - admin role - list again 2", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":3,"name":"222"},{"id":2,"name":"test2"},{"id":1,"name":"test"}]`},
-		{name: "Examples - Delete - authorized - admin role - delete", method: "DELETE", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/3", status: 200, expected: `{"message":"OK"}`},
-		{name: "Examples - Get - authorized - admin role - list again 3", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":2,"name":"test2"},{"id":1,"name":"test"}]`},
-		// Validation test with incorrect values
-		{name: "Examples - Post - authorized - admin role - list", method: "POST", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"111 111"}`, endpoint: "/v1/examples/", status: 400, expected: `{"message":"validationError"}`},
-		{name: "Examples - Patch - authorized - admin role - update", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"222 222"}`, endpoint: "/v1/examples/2", status: 400, expected: `{"message":"validationError"}`},
-		// Incorrect role
-		{name: "Examples - Get - unauthorized - user role - list", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: "", endpoint: "/v1/examples/", status: 403, expected: `{"message":"notAllowed"}`},
-		{name: "Examples - Get - unauthorized - user role - show", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: "", endpoint: "/v1/examples/1", status: 403, expected: `{"message":"notAllowed"}`},
-		{name: "Examples - Post - unauthorized - user role - list", method: "POST", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: `{"name":"111"}`, endpoint: "/v1/examples/", status: 403, expected: `{"message":"notAllowed"}`},
-		{name: "Examples - Patch - unauthorized - user role - update", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: `{"name":"222"}`, endpoint: "/v1/examples/3", status: 403, expected: `{"message":"notAllowed"}`},
-		{name: "Examples - Delete - unauthorized - user role - delete", method: "DELETE", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: "", endpoint: "/v1/examples/3", status: 403, expected: `{"message":"notAllowed"}`},
-		// Unknown email address in JWT
-		{name: "Examples - Get - wrong email - admin role - list", method: "GET", authorizationEnabled: true, email: "wrong@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 403, expected: `{"message":"noUserFound"}`},
-		// Not existing items
-		{name: "Examples - Get - authorized - admin role - show unknown", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/99", status: 404, expected: `{"message":"notFound"}`},
-		{name: "Examples - Patch - authorized - admin role - update unknown", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"222"}`, endpoint: "/v1/examples/99", status: 404, expected: `{"message":"notFound"}`},
-		{name: "Examples - Delete - authorized - admin role - delete unknown", method: "DELETE", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/99", status: 404, expected: `{"message":"notFound"}`},
+		{object: "Example", testType: "Unauthorized user", result: "Fail", name: "no user - list", method: "GET", authorizationEnabled: false, email: "", role: []string{""}, body: "", endpoint: "/v1/examples/", status: 500, expected: `{"message":"apiError"}`},
+		{object: "Example", testType: "Unauthorized user", result: "Fail", name: "no user - show", method: "GET", authorizationEnabled: false, email: "", role: []string{""}, body: "", endpoint: "/v1/examples/1", status: 500, expected: `{"message":"apiError"}`},
+		{object: "Example", testType: "Unauthorized user", result: "Fail", name: "no user - list", method: "POST", authorizationEnabled: false, email: "", role: []string{""}, body: `{"name":"111"}`, endpoint: "/v1/examples/", status: 500, expected: `{"message":"apiError"}`},
+		{object: "Example", testType: "Unauthorized user", result: "Fail", name: "no user - update", method: "PATCH", authorizationEnabled: false, email: "", role: []string{""}, body: `{"name":"222"}`, endpoint: "/v1/examples/3", status: 500, expected: `{"message":"apiError"}`},
+		{object: "Example", testType: "Unauthorized user", result: "Fail", name: "no user - delete", method: "DELETE", authorizationEnabled: false, email: "", role: []string{""}, body: "", endpoint: "/v1/examples/3", status: 500, expected: `{"message":"apiError"}`},
+		{object: "Example", testType: "Unauthorized user", result: "Fail", name: "spoofed user - list", method: "GET", authorizationEnabled: true, email: "wrong@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 403, expected: `{"message":"noUserFound"}`},
+		{object: "Example", testType: "Authorized user", result: "Success", name: "admin role - list 1", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":2,"name":"test2"},{"id":1,"name":"test"}]`},
+		{object: "Example", testType: "Authorized user", result: "Success", name: "admin role - show", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/1", status: 200, expected: `{"id":1,"name":"test"}`},
+		{object: "Example", testType: "Authorized user", result: "Success", name: "admin role - list", method: "POST", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"111"}`, endpoint: "/v1/examples/", status: 200, expected: `{"message":"OK"}`},
+		{object: "Example", testType: "Authorized user", result: "Success", name: "admin role - list 2", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":3,"name":"111"},{"id":2,"name":"test2"},{"id":1,"name":"test"}]`},
+		{object: "Example", testType: "Authorized user", result: "Success", name: "admin role - update", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"222"}`, endpoint: "/v1/examples/3", status: 200, expected: `{"message":"OK"}`},
+		{object: "Example", testType: "Authorized user", result: "Success", name: "admin role - list 3", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":3,"name":"222"},{"id":2,"name":"test2"},{"id":1,"name":"test"}]`},
+		{object: "Example", testType: "Authorized user", result: "Success", name: "admin role - delete", method: "DELETE", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/3", status: 200, expected: `{"message":"OK"}`},
+		{object: "Example", testType: "Authorized user", result: "Success", name: "admin role - list 4", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/", status: 200, expected: `[{"id":2,"name":"test2"},{"id":1,"name":"test"}]`},
+		{object: "Example", testType: "Authorized user", result: "Fail", name: "unknown role - list", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: "", endpoint: "/v1/examples/", status: 403, expected: `{"message":"notAllowed"}`},
+		{object: "Example", testType: "Authorized user", result: "Fail", name: "unknown role - show", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: "", endpoint: "/v1/examples/1", status: 403, expected: `{"message":"notAllowed"}`},
+		{object: "Example", testType: "Authorized user", result: "Fail", name: "unknown role - list", method: "POST", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: `{"name":"111"}`, endpoint: "/v1/examples/", status: 403, expected: `{"message":"notAllowed"}`},
+		{object: "Example", testType: "Authorized user", result: "Fail", name: "unknown role - update", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: `{"name":"222"}`, endpoint: "/v1/examples/3", status: 403, expected: `{"message":"notAllowed"}`},
+		{object: "Example", testType: "Authorized user", result: "Fail", name: "unknown role - delete", method: "DELETE", authorizationEnabled: true, email: "info@examples.org", role: []string{"user"}, body: "", endpoint: "/v1/examples/3", status: 403, expected: `{"message":"notAllowed"}`},
+		{object: "Example", testType: "Validation", result: "Fail", name: "wrong legth - create", method: "POST", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"1"}`, endpoint: "/v1/examples/", status: 400, expected: `{"message":"validationError"}`},
+		{object: "Example", testType: "Validation", result: "Fail", name: "wrong symbol - create", method: "POST", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"111*111"}`, endpoint: "/v1/examples/", status: 400, expected: `{"message":"validationError"}`},
+		{object: "Example", testType: "Validation", result: "Fail", name: "wrong fields - create", method: "POST", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{}`, endpoint: "/v1/examples/", status: 400, expected: `{"message":"validationError"}`},
+		{object: "Example", testType: "Validation", result: "Fail", name: "wrong length - update", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"2"}`, endpoint: "/v1/examples/2", status: 400, expected: `{"message":"validationError"}`},
+		{object: "Example", testType: "Validation", result: "Fail", name: "wrong symbol - update", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"222*222"}`, endpoint: "/v1/examples/2", status: 400, expected: `{"message":"validationError"}`},
+		{object: "Example", testType: "Validation", result: "Fail", name: "wrong fields - update", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{}`, endpoint: "/v1/examples/2", status: 400, expected: `{"message":"validationError"}`},
+		{object: "Example", testType: "Unknown objects", result: "Fail", name: "show unknown", method: "GET", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/99", status: 404, expected: `{"message":"notFound"}`},
+		{object: "Example", testType: "Unknown objects", result: "Fail", name: "update unknown", method: "PATCH", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: `{"name":"222"}`, endpoint: "/v1/examples/99", status: 404, expected: `{"message":"notFound"}`},
+		{object: "Example", testType: "Unknown objects", result: "Fail", name: "delete unknown", method: "DELETE", authorizationEnabled: true, email: "info@examples.org", role: []string{"admin"}, body: "", endpoint: "/v1/examples/99", status: 404, expected: `{"message":"notFound"}`},
 	}
 
 	for _, st := range tests {
@@ -115,10 +106,10 @@ func TestHealth(t *testing.T) {
 		body, _ := ioutil.ReadAll(resp.Body)
 
 		bodyStr := string(body)
-		bodyStr = updatedRegex.ReplaceAllString(bodyStr, "")
-		bodyStr = createdRegex.ReplaceAllString(bodyStr, "")
+		bodyStr = helpers.UpdatedRegex.ReplaceAllString(bodyStr, "")
+		bodyStr = helpers.CreatedRegex.ReplaceAllString(bodyStr, "")
 
-		assert.Equal(t, st.status, resp.StatusCode, st.name)
-		assert.Equal(t, st.expected, bodyStr, st.name)
+		assert.Equal(t, st.status, resp.StatusCode, st.object+" - "+st.testType+" - "+st.result+" - "+st.name)
+		assert.Equal(t, st.expected, bodyStr, st.object+" - "+st.testType+" - "+st.result+" - "+st.name)
 	}
 }

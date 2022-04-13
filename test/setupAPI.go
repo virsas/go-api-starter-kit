@@ -33,11 +33,20 @@ func NewTestAPI() (*TestAPI, error) {
 	}
 	env.DB = d
 
-	// Postgres setup
+	// Postgres reset - TEST ONLY
+	if err := db.PostgresReset(d, "file://../../migrations"); err != nil {
+		return nil, err
+	}
+	// Mysql reset - TEST ONLY
+	//if err := db.PostgresReset(d, "file://../../migrations"); err != nil {
+	//	return nil, err
+	//}
+
+	// Postgres migration
 	if err := db.PostgresMigrate(d, "file://../../migrations"); err != nil {
 		return nil, err
 	}
-	// Mysql setup
+	// Mysql migration
 	//if err := db.PostgresMigrate(d, "file://../../migrations"); err != nil {
 	//	return nil, err
 	//}

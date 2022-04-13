@@ -51,6 +51,9 @@ func TestHealth(t *testing.T) {
 	defer testServer.Close()
 
 	tests := []struct {
+		object               string
+		testType             string
+		result               string
 		name                 string
 		method               string
 		authorizationEnabled bool
@@ -61,9 +64,9 @@ func TestHealth(t *testing.T) {
 		status               int
 		expected             string
 	}{
-		{name: "Checking /health", method: "GET", authorizationEnabled: false, email: "", role: []string{}, body: "", endpoint: "/health", status: 200, expected: `{"database":"OK","server":"OK"}`},
-		{name: "Checking /v1/status", method: "GET", authorizationEnabled: false, email: "", role: []string{}, body: "", endpoint: "/v1/status", status: 200, expected: `{"database":"OK","server":"OK"}`},
-		{name: "Checking /aaaa", method: "GET", authorizationEnabled: false, email: "", role: []string{}, body: "", endpoint: "/aaaa", status: 404, expected: `404 page not found`},
+		{object: "Health", testType: "Check response", result: "Success", name: "Get /health", method: "GET", authorizationEnabled: false, email: "", role: []string{}, body: "", endpoint: "/health", status: 200, expected: `{"database":"OK","server":"OK"}`},
+		{object: "Health", testType: "Check response", result: "Success", name: "Get /v1/status", method: "GET", authorizationEnabled: false, email: "", role: []string{}, body: "", endpoint: "/v1/status", status: 200, expected: `{"database":"OK","server":"OK"}`},
+		{object: "Health", testType: "Unknown path", result: "Fail", name: "Get /aaaa", method: "GET", authorizationEnabled: false, email: "", role: []string{}, body: "", endpoint: "/aaaa", status: 404, expected: `404 page not found`},
 	}
 
 	for _, st := range tests {
@@ -75,7 +78,9 @@ func TestHealth(t *testing.T) {
 		resp := test.GetResponse(testServer.URL, st.endpoint, st.method, st.body, st.authorizationEnabled, authorization)
 		body, _ := ioutil.ReadAll(resp.Body)
 
-		assert.Equal(t, st.status, resp.StatusCode, st.email)
-		assert.Equal(t, st.expected, string(body), st.email)
+		bodyStr := string(body)
+
+		assert.Equal(t, st.status, resp.StatusCode, st.object+" - "+st.testType+" - "+st.result+" - "+st.name)
+		assert.Equal(t, st.expected, bodyStr, st.object+" - "+st.testType+" - "+st.result+" - "+st.name)
 	}
 }
