@@ -9,9 +9,10 @@ import (
 )
 
 type usermodel struct {
-	uid    sql.NullInt64
-	aid    sql.NullInt64
-	locked sql.NullBool
+	uid         sql.NullInt64
+	aid         sql.NullInt64
+	locked      sql.NullBool
+	globaladmin sql.NullBool
 }
 
 func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
@@ -21,7 +22,7 @@ func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 
 		email := c.MustGet("email")
 
-		err = db.QueryRow("SELECT id, account_id, locked FROM users WHERE email=$1;", email).Scan(&user.uid, &user.aid, &user.locked)
+		err = db.QueryRow("SELECT id, account_id, locked, globaladmin FROM users WHERE email=$1;", email).Scan(&user.uid, &user.aid, &user.locked, &user.globaladmin)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				log.Error(err.Error())
@@ -68,6 +69,19 @@ func User(db *sql.DB, log logger.LoggerHandler) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		if user.globaladmin.Valid {
+			c.Set("globaladmin", user.globaladmin.Bool)
+		} else {
+			log.Error(err.Error())
+			c.JSON(vars.STATUS_NOTFOUND_ERROR_CODE, gin.H{
+				"message": vars.STATUS_NOTFOUND_ERROR_STRING,
+			})
+			c.Abort()
+			return
+		}
+		// TODO:
+		// set roles
 
 		c.Next()
 	}

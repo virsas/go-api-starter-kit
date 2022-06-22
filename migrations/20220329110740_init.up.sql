@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL,
     email character varying(255) NOT NULL UNIQUE,
     locked boolean NOT NULL DEFAULT FALSE,
+    globaladmin boolean NOT NULL DEFAULT FALSE,
     account_id integer NOT NULL,
     created_at timestamp with time zone DEFAULT NOW(),
     updated_at timestamp with time zone,

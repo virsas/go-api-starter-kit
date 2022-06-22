@@ -62,6 +62,7 @@ func getClaims(c *gin.Context, token *jwt.Token, log logger.LoggerHandler) error
 
 	if ok {
 		c.Set("email", claims["email"])
+		// TODO migrate roles to user.go middleware
 		c.Set("roles", claims["roles"])
 	} else {
 		return vars.StatusServerError(errors.New("getClaimsError"))

@@ -29,6 +29,9 @@ const STATUS_AUTH_ERROR_STRING = "notAllowed"
 const STATUS_AUTH_LOCKED_ERROR_CODE = http.StatusForbidden
 const STATUS_AUTH_LOCKED_ERROR_STRING = "userLocked"
 
+const STATUS_DELETE_ERROR_CODE = http.StatusForbidden
+const STATUS_DELETE_ERROR_STRING = "notEmpty"
+
 type StatusErr struct {
 	statusCode int
 	statusMsg  string
@@ -65,4 +68,7 @@ func StatusValidationError(err error) error {
 }
 func StatusAuthError(err error) error {
 	return &StatusErr{STATUS_AUTH_ERROR_CODE, STATUS_AUTH_ERROR_STRING, err}
+}
+func StatusDeleteError(err error) error {
+	return &StatusErr{STATUS_DELETE_ERROR_CODE, STATUS_DELETE_ERROR_STRING, err}
 }

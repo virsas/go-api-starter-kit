@@ -1,9 +1,8 @@
-package example
+package sysexample
 
 import (
 	"database/sql"
 	"encoding/json"
-	"go-api-starter-kit/helpers"
 	"go-api-starter-kit/utils/logger"
 	"go-api-starter-kit/utils/vars"
 	"strconv"
@@ -23,25 +22,7 @@ func newController(db *sql.DB, log logger.LoggerHandler) *controller {
 }
 
 func (ctrl *controller) list(c *gin.Context) {
-	var err error
-	var examples []Example = []Example{}
-
-	aid, err := helpers.GetClaimsInt64(c.MustGet("aid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-	uid, err := helpers.GetClaimsInt64(c.MustGet("uid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-
-	examples, err = ctrl.m.list(aid, uid)
+	examples, err := ctrl.m.list()
 	if err != nil {
 		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
 			"message": err.(*vars.StatusErr).Error(),
@@ -53,10 +34,8 @@ func (ctrl *controller) list(c *gin.Context) {
 }
 
 func (ctrl *controller) create(c *gin.Context) {
-	var err error
 	var example ExampleInput
-
-	err = json.NewDecoder(c.Request.Body).Decode(&example)
+	err := json.NewDecoder(c.Request.Body).Decode(&example)
 	if err != nil {
 		ctrl.log.Error(err.Error())
 		c.JSON(vars.STATUS_SERVER_ERROR_CODE, gin.H{
@@ -65,22 +44,7 @@ func (ctrl *controller) create(c *gin.Context) {
 		return
 	}
 
-	aid, err := helpers.GetClaimsInt64(c.MustGet("aid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-	uid, err := helpers.GetClaimsInt64(c.MustGet("uid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-
-	err = ctrl.m.create(c, example, aid, uid)
+	err = ctrl.m.create(c, example)
 	if err != nil {
 		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
 			"message": err.(*vars.StatusErr).Error(),
@@ -94,9 +58,6 @@ func (ctrl *controller) create(c *gin.Context) {
 }
 
 func (ctrl *controller) show(c *gin.Context) {
-	var err error
-	var example Example
-
 	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
 	if err != nil {
 		ctrl.log.Error(err.Error())
@@ -106,22 +67,7 @@ func (ctrl *controller) show(c *gin.Context) {
 		return
 	}
 
-	aid, err := helpers.GetClaimsInt64(c.MustGet("aid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-	uid, err := helpers.GetClaimsInt64(c.MustGet("uid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-
-	example, err = ctrl.m.show(id, aid, uid)
+	example, err := ctrl.m.show(id)
 	if err != nil {
 		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
 			"message": err.(*vars.StatusErr).Error(),
@@ -133,8 +79,6 @@ func (ctrl *controller) show(c *gin.Context) {
 }
 
 func (ctrl *controller) update(c *gin.Context) {
-	var err error
-
 	id, err := strconv.ParseInt(c.Param("ID"), 10, 64)
 	if err != nil {
 		ctrl.log.Error(err.Error())
@@ -154,22 +98,7 @@ func (ctrl *controller) update(c *gin.Context) {
 		return
 	}
 
-	aid, err := helpers.GetClaimsInt64(c.MustGet("aid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-	uid, err := helpers.GetClaimsInt64(c.MustGet("uid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-
-	err = ctrl.m.update(c, id, example, aid, uid)
+	err = ctrl.m.update(c, id, example)
 	if err != nil {
 		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
 			"message": err.(*vars.StatusErr).Error(),
@@ -192,22 +121,7 @@ func (ctrl *controller) delete(c *gin.Context) {
 		return
 	}
 
-	aid, err := helpers.GetClaimsInt64(c.MustGet("aid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-	uid, err := helpers.GetClaimsInt64(c.MustGet("uid"))
-	if err != nil {
-		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
-			"message": err.(*vars.StatusErr).Error(),
-		})
-		return
-	}
-
-	err = ctrl.m.delete(c, id, aid, uid)
+	err = ctrl.m.delete(c, id)
 	if err != nil {
 		c.JSON(err.(*vars.StatusErr).Code(), gin.H{
 			"message": err.(*vars.StatusErr).Error(),
